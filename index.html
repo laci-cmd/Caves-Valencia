@@ -3,894 +3,1243 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Caves & Mines Near Valencia</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<title>Caves & Mines · Valencia Region</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital@0;1&family=Fraunces:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <style>
-:root {
-  --bg:#0a0908;--surface:#141210;--surface2:#1c1917;--border:#2c2825;--border2:#3d3835;
-  --text:#e8e4df;--text2:#a39c96;--text3:#6b635d;
-  --amber:#d97706;--amber-light:#fbbf24;
-  --green:#16a34a;--green-light:#4ade80;
-  --blue:#1d4ed8;--blue-light:#60a5fa;
-  --yellow:#b45309;--yellow-light:#fcd34d;
-  --red:#991b1b;--red-light:#f87171;
-  --purple:#7c3aed;--purple-light:#c4b5fd;
+:root{
+  --bg:#0a0908;--s1:#141210;--s2:#1c1917;--s3:#232120;
+  --b1:#2c2825;--b2:#3d3835;--b3:#4d4845;
+  --tx:#e8e4df;--t2:#a39c96;--t3:#6b635d;--t4:#47423e;
+  --amber:#d97706;--al:#fbbf24;--ad:#92400e;
+  --green:#16a34a;--gl:#4ade80;
+  --blue:#1d4ed8;--bl:#60a5fa;
+  --yellow:#b45309;--yl:#fcd34d;
+  --red:#991b1b;--rl:#f87171;
+  --purple:#7c3aed;--pl:#c4b5fd;
+  --cyan:#0891b2;--cl:#67e8f9;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden}
-body{font-family:'DM Mono',monospace;background:var(--bg);color:var(--text);display:flex;flex-direction:column;height:100vh}
+html,body{height:100%;overflow:hidden;background:var(--bg)}
+body{font-family:'DM Mono',monospace;color:var(--tx);display:flex;flex-direction:column;height:100vh}
 
-header{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:16px;flex-shrink:0;z-index:100}
-.header-title{flex:1}
-.header-title h1{font-family:'Fraunces',serif;font-size:17px;font-weight:700;color:var(--text);letter-spacing:-0.3px}
-.header-title p{font-size:10px;color:var(--text3);margin-top:2px;letter-spacing:.05em}
-.legend{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
-.leg{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text2);letter-spacing:.03em}
-.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,.25)}
+/* ── HEADER ── */
+header{background:var(--s1);border-bottom:1px solid var(--b1);padding:8px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0;z-index:200}
+.hlogo{font-size:20px;line-height:1}
+.htitle h1{font-family:'Fraunces',serif;font-size:15px;font-weight:700;letter-spacing:-.3px}
+.htitle p{font-size:9px;color:var(--t3);letter-spacing:.08em;margin-top:1px}
+.hlegend{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-left:auto}
+.hleg{display:flex;align-items:center;gap:4px;font-size:9px;color:var(--t2)}
+.hleg svg{flex-shrink:0}
 
+/* ── LAYOUT ── */
 .main{display:flex;flex:1;overflow:hidden}
-#map{flex:0 0 56%;position:relative}
-.panel{flex:1;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+#map{flex:0 0 56%;position:relative;background:#0d0c0b}
+.panel{flex:1;background:var(--s1);border-left:1px solid var(--b1);display:flex;flex-direction:column;overflow:hidden;min-width:0}
 
-.filter-bar{background:var(--surface2);border-bottom:1px solid var(--border);padding:8px 12px;display:flex;gap:5px;flex-wrap:wrap;align-items:center;flex-shrink:0}
-.filter-bar input{background:var(--surface);border:1px solid var(--border2);border-radius:5px;padding:5px 10px;font-size:11px;font-family:'DM Mono',monospace;color:var(--text);width:130px;outline:none}
-.filter-bar input::placeholder{color:var(--text3)}
-.fbtn{padding:4px 10px;border-radius:5px;border:1px solid var(--border2);cursor:pointer;font-size:10px;font-family:'DM Mono',monospace;background:var(--surface);color:var(--text2);font-weight:400;letter-spacing:.03em;transition:all .15s}
-.fbtn:hover{color:var(--text)}
+/* ── FILTERS ── */
+.fbar{background:var(--s2);border-bottom:1px solid var(--b1);padding:7px 10px;display:flex;gap:4px;flex-wrap:wrap;align-items:center;flex-shrink:0}
+.fbar input{background:var(--s1);border:1px solid var(--b2);border-radius:4px;padding:4px 8px;font-size:10px;font-family:'DM Mono',monospace;color:var(--tx);width:120px;outline:none;transition:border .15s}
+.fbar input:focus{border-color:var(--amber)}
+.fbtn{padding:3px 9px;border-radius:4px;border:1px solid var(--b2);cursor:pointer;font-size:9px;font-family:'DM Mono',monospace;background:var(--s1);color:var(--t2);letter-spacing:.04em;transition:all .15s;white-space:nowrap}
+.fbtn:hover{color:var(--tx);border-color:var(--b3)}
 .fbtn.active{background:var(--amber);color:#fff;border-color:var(--amber)}
-.cave-count{font-size:10px;color:var(--text3);margin-left:auto}
+.fcount{font-size:9px;color:var(--t4);margin-left:auto}
+.fsep{width:1px;background:var(--b1);height:16px;flex-shrink:0}
 
-.panel-list{overflow-y:auto;flex:1}
-.cave-item{padding:11px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;display:flex;gap:10px;align-items:flex-start}
-.cave-item:hover{background:var(--surface2)}
-.cave-item.selected{background:#1a1100;border-left:3px solid var(--amber)}
-.cave-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:4px;border:1.5px solid rgba(255,255,255,.2)}
-.cave-info{flex:1;min-width:0}
-.cave-name{font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cave-sub{font-size:10px;color:var(--text3);margin-top:2px}
-.cave-km{color:var(--amber-light)}
-.acc-pill{font-size:9px;padding:2px 7px;border-radius:4px;font-weight:700;flex-shrink:0;margin-top:2px;letter-spacing:.04em;text-transform:uppercase}
-.acc-free{background:#052e16;color:var(--green-light)}
-.acc-tourist{background:#0c1a3e;color:var(--blue-light)}
-.acc-permit{background:#1c0f00;color:var(--yellow-light)}
-.acc-closed{background:#2d0000;color:var(--red-light)}
+/* ── LIST ── */
+.plist{overflow-y:auto;flex:1}
+.ci{padding:9px 12px;border-bottom:1px solid var(--b1);cursor:pointer;transition:background .1s;display:flex;gap:8px;align-items:flex-start}
+.ci:hover{background:var(--s2)}
+.ci.sel{background:#140d00;border-left:2px solid var(--amber)}
+.ci-sym{width:14px;height:14px;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center}
+.ci-info{flex:1;min-width:0}
+.ci-name{font-size:11px;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ci-sub{font-size:9px;color:var(--t3);margin-top:1px}
+.ckm{color:var(--al)}
+.apill{font-size:8px;padding:1px 5px;border-radius:3px;font-weight:700;flex-shrink:0;margin-top:2px;text-transform:uppercase;letter-spacing:.05em}
+.ap-free{background:#052e16;color:var(--gl)}
+.ap-tourist{background:#0c1a3e;color:var(--bl)}
+.ap-permit{background:#1c0f00;color:var(--yl)}
+.ap-closed{background:#2d0000;color:var(--rl)}
 
-.panel-detail{flex:1;overflow-y:auto;display:none;flex-direction:column}
-.panel-detail.active{display:flex}
+/* ── DETAIL ── */
+.pdetail{flex:1;overflow-y:auto;display:none;flex-direction:column}
+.pdetail.on{display:flex}
+.dphoto{width:100%;height:160px;object-fit:cover;display:block}
+.dphoto-ph{width:100%;height:90px;background:linear-gradient(135deg,#1a1510 0%,#2c2018 100%);display:flex;align-items:center;justify-content:center;font-size:32px}
+.dbody{padding:14px;flex:1}
+.backbtn{display:inline-flex;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--b2);color:var(--t2);padding:4px 10px;border-radius:4px;cursor:pointer;font-family:'DM Mono',monospace;font-size:9px;margin-bottom:12px;transition:color .15s;letter-spacing:.04em}
+.backbtn:hover{color:var(--tx)}
+.dkind{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+.dname{font-family:'Fraunces',serif;font-size:19px;font-weight:700;line-height:1.2;margin-bottom:3px}
+.dloc{font-size:10px;color:var(--t2);margin-bottom:5px}
+.dkm{color:var(--al);font-weight:700}
+.dhigh{font-family:'Fraunces',serif;font-style:italic;font-size:12px;color:var(--al);border-left:2px solid var(--amber);padding-left:9px;margin-bottom:11px;line-height:1.6}
 
-.detail-photo{width:100%;height:175px;object-fit:cover;display:block;background:var(--surface2)}
-.detail-photo-placeholder{width:100%;height:110px;background:linear-gradient(135deg,#1a1510,#2a1f15);display:flex;align-items:center;justify-content:center;font-size:36px}
-.detail-body{padding:16px;flex:1}
+/* ── ACCESS BAR ── */
+.abar{border-radius:5px;padding:8px 11px;margin-bottom:9px;display:flex;align-items:center;gap:9px}
+.abar.free{background:#052e16;border:1px solid #14532d}
+.abar.tourist{background:#0c1a3e;border:1px solid #1e3a8a}
+.abar.permit{background:#1c0f00;border:1px solid #78350f}
+.abar.closed{background:#2d0000;border:1px solid #7f1d1d}
+.abar-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.abar.free .abar-lbl{color:var(--gl)}.abar.tourist .abar-lbl{color:var(--bl)}
+.abar.permit .abar-lbl{color:var(--yl)}.abar.closed .abar-lbl{color:var(--rl)}
+.abar-sub{font-size:10px;color:var(--t2);margin-top:1px}
 
-.back-btn{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border2);color:var(--text2);padding:5px 12px;border-radius:5px;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;margin-bottom:14px;transition:color .15s;letter-spacing:.03em}
-.back-btn:hover{color:var(--text)}
+/* ── SCORE ROW ── */
+.srow{display:flex;gap:5px;margin-bottom:10px}
+.scell{flex:1;background:var(--s2);border:1px solid var(--b1);border-radius:5px;padding:6px 8px;text-align:center}
+.slabel{font-size:8px;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px}
+.sval{font-size:13px;font-weight:700}
+.s-epic{color:var(--al)}.s-danger{color:var(--rl)}.s-size{color:var(--cl)}.s-wet{color:var(--bl)}
 
-.detail-name{font-family:'Fraunces',serif;font-size:20px;font-weight:700;color:var(--text);line-height:1.2;margin-bottom:4px}
-.detail-location{font-size:11px;color:var(--text2);margin-bottom:6px}
-.detail-km{color:var(--amber-light);font-weight:700}
-.detail-type{font-size:10px;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px}
-.detail-highlight{font-family:'Fraunces',serif;font-style:italic;font-size:13px;color:var(--amber-light);margin-bottom:12px;line-height:1.5;border-left:2px solid var(--amber);padding-left:10px}
+/* ── STATS GRID ── */
+.sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:9px}
+.sc{background:var(--s2);border:1px solid var(--b1);border-radius:4px;padding:6px 8px}
+.sl{font-size:8px;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px}
+.sv{font-size:10px;color:var(--tx);font-weight:700;line-height:1.3}
 
-.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:12px}
-.stat-cell{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 10px}
-.stat-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px}
-.stat-value{font-size:11px;color:var(--text);font-weight:700}
+/* ── TABS ── */
+.tabs{display:flex;border-bottom:1px solid var(--b1);flex-shrink:0;background:var(--s2)}
+.tab{padding:7px 12px;font-size:9px;font-family:'DM Mono',monospace;cursor:pointer;color:var(--t3);letter-spacing:.04em;border-bottom:2px solid transparent;transition:all .15s}
+.tab:hover{color:var(--t2)}
+.tab.on{color:var(--al);border-bottom-color:var(--amber)}
+.tabp{display:none}.tabp.on{display:block}
 
-.access-bar{border-radius:6px;padding:9px 12px;margin-bottom:10px;display:flex;align-items:center;gap:10px}
-.access-bar.free{background:#052e16;border:1px solid #14532d}
-.access-bar.tourist{background:#0c1a3e;border:1px solid #1e3a8a}
-.access-bar.permit{background:#1c0f00;border:1px solid #78350f}
-.access-bar.closed{background:#2d0000;border:1px solid #7f1d1d}
-.access-bar-icon{font-size:16px}
-.access-bar-text{flex:1}
-.access-bar-label{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
-.access-bar.free .access-bar-label{color:var(--green-light)}
-.access-bar.tourist .access-bar-label{color:var(--blue-light)}
-.access-bar.permit .access-bar-label{color:var(--yellow-light)}
-.access-bar.closed .access-bar-label{color:var(--red-light)}
-.access-bar-desc{font-size:11px;color:var(--text2);margin-top:2px}
+/* ── SECTIONS ── */
+.sec{margin-bottom:11px}
+.sh{font-size:8px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;padding-bottom:4px;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:5px}
+.sec p{font-size:11px;color:var(--t2);line-height:1.7}
+.rlist{list-style:none}
+.rlist li{font-size:10px;color:var(--t2);padding:3px 0;border-bottom:1px solid var(--b1);display:flex;gap:7px;line-height:1.5}
+.rlist li:last-child{border:none}
+.rlist li::before{content:"→";color:var(--amber);flex-shrink:0}
 
-.section{margin-bottom:12px}
-.section-title{font-size:9px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px}
-.section p{font-size:12px;color:var(--text2);line-height:1.7}
-.req-list{list-style:none}
-.req-list li{font-size:11px;color:var(--text2);padding:3px 0;border-bottom:1px solid var(--border);display:flex;gap:8px;line-height:1.5}
-.req-list li:last-child{border-bottom:none}
-.req-list li::before{content:"→";color:var(--amber);flex-shrink:0}
+/* ── RISK BOX ── */
+.rbox{background:#180303;border:1px solid #7f1d1d;border-radius:5px;padding:9px 11px;margin-bottom:9px}
+.rbox .sh{color:var(--rl);border-color:#3d0000}
+.rbox .rlist li::before{color:var(--rl)}
+.rbox .rlist li{color:#fca5a5;border-color:#3d0000}
 
-.risk-box{background:#1a0404;border:1px solid #7f1d1d;border-radius:6px;padding:10px 12px;margin-bottom:10px}
-.risk-box .section-title{color:var(--red-light);border-color:#450a0a}
-.risk-box .req-list li::before{color:var(--red-light)}
-.risk-box .req-list li{color:#fca5a5;border-color:#450a0a}
+/* ── PERMIT BOX ── */
+.pbox{background:#120900;border:1px solid #78350f;border-radius:5px;padding:9px 11px;margin-bottom:9px}
+.pbox .sh{color:var(--yl);border-color:#431407}
+.pbox p{font-size:10px;color:var(--yl);line-height:1.7}
 
-.permit-box{background:#140a00;border:1px solid #78350f;border-radius:6px;padding:10px 12px;margin-bottom:10px}
-.permit-box .section-title{color:var(--yellow-light);border-color:#431407}
-.permit-box p{font-size:11px;color:#fcd34d;line-height:1.7}
+/* ── OPERATORS ── */
+.opbox{background:#060c12;border:1px solid #0c2a4a;border-radius:5px;padding:9px 11px;margin-bottom:9px}
+.opbox .sh{color:var(--cl);border-color:#0c2a4a}
+.op{padding:6px 0;border-bottom:1px solid #0c2a4a}
+.op:last-child{border:none;padding-bottom:0}
+.op-name{font-size:10px;font-weight:700;color:var(--cl)}
+.op-acts{font-size:9px;color:var(--t2);margin-top:2px}
+.op-price{font-size:9px;color:var(--al);margin-top:1px}
+.op-link{font-size:9px;color:var(--bl);text-decoration:none;border-bottom:1px solid #1e3a8a}
 
-/* Community notes */
-.community-box{background:#0c0c1a;border:1px solid #2d2d5e;border-radius:6px;padding:10px 12px;margin-bottom:10px}
-.community-box .section-title{color:var(--purple-light);border-color:#2d2d5e}
-.community-note{margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #1a1a3a}
-.community-note:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
-.community-note-text{font-size:11px;color:#c4b5fd;line-height:1.6;margin-bottom:4px}
-.community-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.source-tag{font-size:9px;padding:1px 6px;border-radius:3px;font-weight:700;letter-spacing:.04em}
-.src-tripadvisor{background:#1a2a1a;color:#4ade80}
-.src-forum{background:#1a1a2a;color:#818cf8}
-.src-official{background:#1a1200;color:#fcd34d}
-.src-rescue{background:#2d0000;color:#f87171}
-.src-wikiloc{background:#1a2a2a;color:#22d3ee}
-.src-unverified{background:#2a2a2a;color:#a8a29e}
-.reliability{font-size:9px;color:var(--text3);letter-spacing:.03em}
+/* ── AIR QUALITY ── */
+.airbox{background:#0a0a14;border:1px solid #3730a3;border-radius:5px;padding:9px 11px;margin-bottom:9px}
+.airbox .sh{color:var(--pl);border-color:#3730a3}
+.air-item{font-size:10px;color:var(--pl);line-height:1.6;padding:3px 0;border-bottom:1px solid #1e1b4b}
+.air-item:last-child{border:none}
+.air-src{font-size:8px;color:var(--t3);margin-top:1px}
 
-.directions-btn{display:flex;align-items:center;gap:8px;background:#0c2044;border:1px solid #1e3a8a;border-radius:6px;padding:9px 12px;color:var(--blue-light);font-family:'DM Mono',monospace;font-size:11px;text-decoration:none;margin-bottom:10px;transition:background .15s;cursor:pointer}
-.directions-btn:hover{background:#112a5e}
+/* ── COMMUNITY ── */
+.cbox{background:#0c0c1a;border:1px solid #2d2d5e;border-radius:5px;padding:9px 11px;margin-bottom:9px}
+.cbox .sh{color:var(--pl);border-color:#2d2d5e}
+.cnote{margin-bottom:7px;padding-bottom:7px;border-bottom:1px solid #1a1a3a}
+.cnote:last-child{margin:0;padding:0;border:none}
+.cntxt{font-size:10px;color:#c4b5fd;line-height:1.6;margin-bottom:3px}
+.cmeta{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.stag{font-size:8px;padding:1px 5px;border-radius:3px;font-weight:700;letter-spacing:.04em}
+.st-trip{background:#1a2a1a;color:#4ade80}.st-forum{background:#1a1a2a;color:#818cf8}
+.st-off{background:#1a1200;color:#fcd34d}.st-resc{background:#2d0000;color:#f87171}
+.st-wiki{background:#1a2a2a;color:#22d3ee}.st-unv{background:#2a2a2a;color:#a8a29e}
+.crel{font-size:8px;color:var(--t4)}
 
-.season-row{display:flex;gap:3px;margin-top:6px}
-.month-cell{flex:1;height:18px;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700}
-.month-good{background:#052e16;color:var(--green-light)}
-.month-ok{background:#1c1500;color:var(--yellow-light)}
-.month-bad{background:#2d0000;color:var(--red-light)}
-.month-closed{background:#1a1a1a;color:var(--text3)}
+/* ── SEASON ── */
+.srow2{display:flex;gap:2px;margin-top:5px}
+.mc{flex:1;height:16px;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700}
+.mg{background:#052e16;color:var(--gl)}.mo{background:#1c1500;color:var(--yl)}.mb{background:#2d0000;color:var(--rl)}
 
-.site-link{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--blue-light);text-decoration:none;border-bottom:1px solid #1e3a8a;padding-bottom:1px}
-.site-link:hover{color:#93c5fd}
+/* ── VIDEOS ── */
+.vbox{margin-bottom:9px}
+.vbox .sh{color:var(--rl);border-color:var(--b1)}
+.vlink{display:flex;align-items:center;gap:7px;background:#1a0808;border:1px solid #7f1d1d;border-radius:4px;padding:7px 10px;margin-bottom:5px;text-decoration:none;color:var(--rl);font-size:10px;transition:background .15s}
+.vlink:hover{background:#2d0a0a}
+.vlink:last-child{margin:0}
 
-.emergency-box{background:var(--surface2);border-radius:6px;padding:9px 12px;margin-top:6px;font-size:11px;color:var(--text3);border:1px solid var(--border)}
-.emergency-box strong{color:var(--text2)}
+/* ── DIRS BTN ── */
+.dirbtn{display:flex;align-items:center;gap:7px;background:#0c2044;border:1px solid #1e3a8a;border-radius:5px;padding:8px 11px;color:var(--bl);font-family:'DM Mono',monospace;font-size:10px;text-decoration:none;margin-bottom:9px;transition:background .15s}
+.dirbtn:hover{background:#112a5e}
 
-::-webkit-scrollbar{width:4px}
-::-webkit-scrollbar-track{background:var(--surface)}
-::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+/* ── EMERGENCY ── */
+.embox{background:var(--s2);border-radius:5px;padding:8px 11px;font-size:10px;color:var(--t3);border:1px solid var(--b1);margin-top:6px}
+.embox strong{color:var(--t2)}
 
-.leaflet-control-layers{background:var(--surface2)!important;border:1px solid var(--border)!important;color:var(--text2)!important;font-family:'DM Mono',monospace!important;font-size:11px!important}
-.leaflet-control-layers-expanded{padding:8px 12px!important}
-.leaflet-control-scale-line{background:rgba(20,18,16,.85)!important;border:1px solid var(--border2)!important;color:var(--text2)!important;font-family:'DM Mono',monospace!important;font-size:10px!important;padding:2px 5px!important}
-.leaflet-popup-content-wrapper{background:var(--surface2)!important;border:1px solid var(--border2)!important;color:var(--text)!important;font-family:'DM Mono',monospace!important;font-size:11px!important;border-radius:6px!important;box-shadow:0 4px 20px rgba(0,0,0,.5)!important}
-.leaflet-popup-tip{background:var(--surface2)!important}
-.leaflet-popup-close-button{color:var(--text2)!important}
+/* ── SITE LINK ── */
+.slink{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--bl);text-decoration:none;border-bottom:1px solid #1e3a8a}
 
-@media(max-width:700px){.main{flex-direction:column}#map{flex:0 0 45vh}.panel{flex:1}.legend{display:none}.stats-grid{grid-template-columns:repeat(2,1fr)}}
+/* ── CUSTOM SCALE BAR ── */
+.mscale{background:rgba(12,10,9,.85);border:1px solid var(--b2);border-radius:4px;padding:4px 8px;font-family:'DM Mono',monospace;font-size:9px;color:var(--t2)}
+.mscale-row{display:flex;align-items:flex-end;gap:0;margin-bottom:2px}
+.mscale-bar{height:6px;border-top:1.5px solid var(--t2);border-right:1.5px solid var(--t2);border-bottom:1.5px solid var(--t2);border-left:none;position:relative;display:flex;align-items:flex-end}
+.mscale-bar:first-child{border-left:1.5px solid var(--t2)}
+.mscale-bar.alt{background:rgba(255,255,255,.06)}
+.mscale-labels{display:flex;gap:0}
+.mscale-lbl{font-size:8px;color:var(--t2);text-align:right;padding-right:2px}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--s1)}::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
+
+/* ── LEAFLET OVERRIDES ── */
+.leaflet-control-layers{background:var(--s2)!important;border:1px solid var(--b1)!important;color:var(--t2)!important;font-family:'DM Mono',monospace!important;font-size:10px!important}
+.leaflet-control-layers-expanded{padding:7px 11px!important}
+.leaflet-control-zoom a{background:var(--s2)!important;color:var(--t2)!important;border:1px solid var(--b2)!important}
+.leaflet-control-zoom a:hover{background:var(--s3)!important;color:var(--tx)!important}
+.leaflet-popup-content-wrapper{background:var(--s2)!important;border:1px solid var(--b2)!important;color:var(--tx)!important;font-family:'DM Mono',monospace!important;font-size:11px!important;border-radius:5px!important;box-shadow:0 4px 20px rgba(0,0,0,.6)!important}
+.leaflet-popup-tip{background:var(--s2)!important}
+.leaflet-popup-close-button{color:var(--t2)!important}
+
+/* ── PULSING SELECTED ── */
+@keyframes pulse{0%{transform:scale(1);opacity:.9}50%{transform:scale(1.5);opacity:.3}100%{transform:scale(1);opacity:.9}}
+.sel-ring{animation:pulse 1.5s ease-in-out infinite;pointer-events:none}
+
+/* ── MOBILE ── */
+@media(max-width:700px){.main{flex-direction:column}#map{flex:0 0 42vh}.panel{flex:1}.hlegend{display:none}.sgrid{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
 <header>
-  <span style="font-size:22px">🪨</span>
-  <div class="header-title">
+  <div class="hlogo">🪨</div>
+  <div class="htitle">
     <h1>Caves & Mines · Valencia Region</h1>
-    <p>CLICK ANY MARKER OR LIST ITEM FOR FULL DETAILS · DATA UPDATED MARCH 2026</p>
+    <p>CLICK ANY MARKER OR LIST ITEM · DATA UPDATED MARCH 2026</p>
   </div>
-  <div class="legend">
-    <div class="leg"><div class="leg-dot" style="background:#16a34a"></div>Free</div>
-    <div class="leg"><div class="leg-dot" style="background:#1d4ed8"></div>Ticket</div>
-    <div class="leg"><div class="leg-dot" style="background:#d97706"></div>Permit</div>
-    <div class="leg"><div class="leg-dot" style="background:#dc2626"></div>Closed</div>
-    <div class="leg"><div class="leg-dot" style="background:#7c3aed"></div>GVA data</div>
+  <div class="hlegend">
+    <div class="hleg"><svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="#16a34a" stroke="#fff" stroke-width="1.5"/></svg>Cave · Free</div>
+    <div class="hleg"><svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="#1d4ed8" stroke="#fff" stroke-width="1.5"/></svg>Cave · Ticket</div>
+    <div class="hleg"><svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="#d97706" stroke="#fff" stroke-width="1.5"/></svg>Cave · Permit</div>
+    <div class="hleg"><svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="#dc2626" stroke="#fff" stroke-width="1.5"/></svg>Cave · Closed</div>
+    <div class="hleg"><svg width="12" height="12"><polygon points="6,0 12,12 0,12" fill="#d97706" stroke="#fff" stroke-width="1"/></svg>Mine</div>
+    <div class="hleg"><svg width="12" height="12"><polygon points="6,1 11,5 9,11 3,11 1,5" fill="#7c3aed" stroke="#fff" stroke-width="1"/></svg>Arch.</div>
   </div>
 </header>
+
 <div class="main">
   <div id="map"></div>
   <div class="panel">
-    <div class="filter-bar">
-      <input type="text" id="search" placeholder="Search…" oninput="filterList()">
-      <button class="fbtn active" onclick="setFilter('all')" id="f-all">All</button>
-      <button class="fbtn" onclick="setFilter('free')" id="f-free">🟢 Free</button>
-      <button class="fbtn" onclick="setFilter('tourist')" id="f-tourist">🔵 Ticket</button>
-      <button class="fbtn" onclick="setFilter('permit')" id="f-permit">🟡 Permit</button>
-      <button class="fbtn" onclick="setFilter('closed')" id="f-closed">🔴 Closed</button>
-      <span class="cave-count" id="count"></span>
+    <div class="fbar">
+      <input type="text" id="fsearch" placeholder="Search caves…" oninput="filterList()">
+      <div class="fsep"></div>
+      <button class="fbtn active" onclick="setAcc('all')" id="fa-all">All</button>
+      <button class="fbtn" onclick="setAcc('free')" id="fa-free">🟢 Free</button>
+      <button class="fbtn" onclick="setAcc('tourist')" id="fa-tourist">🔵 Ticket</button>
+      <button class="fbtn" onclick="setAcc('permit')" id="fa-permit">🟡 Permit</button>
+      <button class="fbtn" onclick="setAcc('closed')" id="fa-closed">🔴 Closed</button>
+      <div class="fsep"></div>
+      <button class="fbtn" onclick="setKind('cave')" id="fk-cave">⬤ Cave</button>
+      <button class="fbtn" onclick="setKind('mine')" id="fk-mine">◆ Mine</button>
+      <button class="fbtn" onclick="setKind('arch')" id="fk-arch">★ Arch</button>
+      <span class="fcount" id="fcount"></span>
     </div>
-    <div class="panel-list" id="panel-list"></div>
-    <div class="panel-detail" id="panel-detail"></div>
+    <div class="plist" id="plist"></div>
+    <div class="pdetail" id="pdetail"></div>
   </div>
 </div>
 
 <script>
-const caves = [
-  {
-    id:1,name:"Coves de Sant Josep",town:"La Vall d'Uixó",province:"Castellón",km:68,
-    lat:39.823,lng:-0.252,access:"tourist",
-    type:"Geological · River cave",
-    highlight:"Longest navigable underground river in Europe — 2,700 metres",
-    desc:"One of Spain's most spectacular show caves. You board a flat-bottomed boat and drift through chambers named 'La Catedral', 'Lago Azul', and 'La Gran Cascada'. Water stays crystal turquoise year-round. Full cave system extends over 4km. Espeleokayak and 'Origen' routes available for those wanting more adventure. Inside Sierra de Espadán Natural Park.",
-    duration:"~45 min (standard boat)",temp:"20°C constant",depth:"River level",length:"2,700m navigable",
-    price:"€18 adult · €12 child (3–12) · Free under 3",
-    hours:"Jan: daily 10:00–14:30 every 30min. Feb–Jun & Sep–Oct: weekdays 10:00–15:40, weekends 9:20–17:00 every 20min. Jul–Aug: extended hours. Check website — can close for floods.",
-    season:[1,1,1,1,2,2,2,2,1,1,1,1],
-    photo:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Coves_de_Sant_Josep_9.jpg/800px-Coves_de_Sant_Josep_9.jpg",
-    requirements:["Book online in advance — sells out in summer","Non-slip shoes (boat boarding area is wet)","Light jacket (20°C feels cold after outside heat)","All ages OK","No individual access — guided boat only","Closes without notice during heavy rain/flooding"],
-    risks:[],
-    permit_info:"",
-    community:[
-      {text:"Up to 6 boats simultaneously with 15 people per boat in peak season — feels industrialised. Worth going early morning or off-season for a better experience.",source:"TripAdvisor",srcClass:"src-tripadvisor",reliability:"★★★★ Many reviews, consistent pattern"},
-      {text:"Photography prohibited during boat ride — enforced strictly by staff. Bring waterproof bag for your phone anyway — humidity is high.",source:"TripAdvisor 2021",srcClass:"src-tripadvisor",reliability:"★★★ Multiple reports"},
-      {text:"Can close with short notice due to rain-caused water level rises — always check the day before in autumn/winter.",source:"Official website",srcClass:"src-official",reliability:"★★★★★ Official source"}
-    ],
-    nearby:"Sierra de Espadán Natural Park · Eslida village · Onda ceramics museum",
-    url:"https://covesdesantjosep.es/tarifas-y-horarios/"
-  },
-  {
-    id:2,name:"Cuevas de la Araña",town:"Bicorp",province:"Valencia",km:80,
-    lat:39.183,lng:-0.958,access:"permit",
-    type:"Archaeological · Mesolithic cave art",
-    highlight:"UNESCO World Heritage · Oldest honey harvesting depiction on Earth — 10,000 BC",
-    desc:"Paintings dated 10,000–8,000 BC show humans climbing rope ladders to harvest honey from a cliff hive, surrounded by bees — one of the most cited pieces of prehistoric art in the world. The cave is in the Macizo del Caroig Natural Park. Access strictly limited to protect the fragile pigments from breath humidity and CO2.",
-    duration:"~3 hrs (depart 10:30)",temp:"~15°C",depth:"Horizontal",length:"~150m",
-    price:"Ask Ecomuseo — part of guided package",
-    hours:"Wed–Sun: Ecomuseo open 10–14h. Cave visits Wed–Sun, depart 10:30. Closed Monday and Tuesday.",
-    season:[1,1,1,1,1,2,2,1,1,1,1,1],
-    photo:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Cueva_de_la_ara%C3%B1a.jpg/800px-Cueva_de_la_ara%C3%B1a.jpg",
-    requirements:["Book via Ecomuseo de Bicorp — ecomuseodebicorp.com","Guided visit only — departs 10:30 Wed–Sun","Own vehicle to reach the paraje — no public transport","Medium difficulty hiking — several hours walking in open terrain","No flash photography — causes irreversible pigment damage","Not wheelchair accessible"],
-    risks:["Exposed mountain trail — sun and heat risk in summer","Rocky terrain to cave entrance","Canyon overlooks — stay on path"],
-    permit_info:"Book directly at ecomuseodebicorp.com or call the Ecomuseo. Visits limited to small groups. Check current price when booking — listed as package experience.",
-    community:[
-      {text:"The 3-hour guided experience includes the valley walk, not just the cave. The guide explains the images in detail — worth every minute. Bring sun protection and 2L water.",source:"Spain.info visitor reports",srcClass:"src-unverified",reliability:"★★★ Aggregated reviews"},
-      {text:"The 'Man of Bicorp' honey harvester figure is about 15cm — smaller than you expect from photos. The landscape and the walk there are as impressive as the art itself.",source:"TripAdvisor",srcClass:"src-tripadvisor",reliability:"★★★★ Multiple reviews"}
-    ],
-    nearby:"Macizo del Caroig Natural Park · Bicorp village · Júcar river route",
-    url:"https://www.ecomuseodebicorp.com/paquete-cuevas-de-la-arana/"
-  },
-  {
-    id:3,name:"Coves de Sant Josep – EspeleoKayak",town:"La Vall d'Uixó",province:"Castellón",km:68,
-    lat:39.824,lng:-0.251,access:"tourist",
-    type:"Adventure · Underground kayaking",
-    highlight:"Paddle deeper into the cave beyond the tourist route — 2–3 hours, technical",
-    desc:"An advanced version of the standard cave visit — you kayak independently through sections not accessible on the standard boat tour. Goes deeper into the cave system. Requires basic kayaking ability. Available as a separate bookable activity on the cave website.",
-    duration:"2–3 hrs",temp:"20°C constant",depth:"River level",length:"Beyond 2,700m route",
-    price:"Check covesdesantjosep.es — separate booking",
-    hours:"Seasonal — check website",
-    season:[1,1,1,1,1,1,2,2,1,1,1,1],
-    photo:"",
-    requirements:["Separate booking from standard visit","Basic kayaking ability required","Minimum age — check website","Wetsuit and equipment provided","Physical fitness required"],
-    risks:["Flood risk — activity cancelled in rain","Low ceilings in some sections","Cold water"],
-    permit_info:"",
-    community:[{text:"Far better experience than the standard boat if you have the fitness for it. You get real silence and solitude deeper in. Book well ahead.",source:"Visitor report / TripAdvisor",srcClass:"src-tripadvisor",reliability:"★★★ Few but consistent reviews"}],
-    nearby:"Same as Coves de Sant Josep",
-    url:"https://covesdesantjosep.es/tarifas-y-horarios/"
-  },
-  {
-    id:4,name:"Cueva de Don Juan",town:"Jalance",province:"Valencia",km:88,
-    lat:39.197,lng:-1.098,access:"tourist",
-    type:"Geological · Speleothem cave",
-    highlight:"Rich formations in Júcar Canyon — Mesolithic tools found inside",
-    desc:"A cave of exceptional beauty beside the Júcar Canyon. Archaeological excavations found Mesolithic hunting tools and fauna remains from 8,000–10,000 BC. The visitor path is ~600m and passes through chambers dense with stalactites and stalagmites. External viewpoints give canyon panoramas before you enter. One of the 5 key tourist caves in the Valencian Community.",
-    duration:"~30 min guided",temp:"14–16°C",depth:"~30m",length:"~600m",
-    price:"~€5–7",
-    hours:"Check Jalance tourism office — seasonal variations",
-    season:[1,1,1,1,1,2,2,2,1,1,1,1],
-    photo:"",
-    requirements:["Ticket at visitor center","Guided visit only","Comfortable walking shoes","Family-friendly — all ages"],
-    risks:[],
-    permit_info:"",
-    community:[{text:"Quieter and less known than Sant Josep — you often get the guide almost to yourself outside of summer. Formations are genuinely impressive.",source:"Spanish travel blogs",srcClass:"src-unverified",reliability:"★★ Few sources"}],
-    nearby:"Júcar Canyon views · Cofrentes castle and thermal spa · Embalse de Embarcaderos",
-    url:"https://www.turismodejalance.com"
-  },
-  {
-    id:5,name:"Covetes del Moro",town:"Bocairent",province:"Valencia",km:73,
-    lat:38.779,lng:-0.602,access:"tourist",
-    type:"Archaeological · Arab-period cave dwellings",
-    highlight:"53 hand-carved caves in a sheer cliff — 8th–13th century Arab storage, €1.50 entry",
-    desc:"About 53 small caves carved into a vertical rockface, dating from the Arab period (8th–13th century AD). Used for grain storage and occasional shelter. You enter from a path along the cliff and squeeze through small doorways between chambers. Part of Bocairent's medieval 'magical route' including the castle, church, and Plaza Mayor. Closed on Mondays.",
-    duration:"1–1.5 hrs",temp:"Outdoor",depth:"Shallow (3–5m)",length:"~60m cliff face",
-    price:"€1.50 adult",
-    hours:"Closed Monday. Tue–Sun: 11:00–14:00. Sat–Sun also 16:30–19:00.",
-    season:[1,1,1,1,2,2,2,2,1,1,1,1],
-    photo:"",
-    requirements:["€1.50 entry — pay at local tourism point","Closed Mondays","Good footwear — some climbing on rock","Narrow passages — not for severe claustrophobics","Not suitable for very limited mobility — exposed cliff path"],
-    risks:["Exposed cliff-face path — don't force it if you have vertigo","Narrow passages between chambers — bumps and scrapes possible"],
-    permit_info:"",
-    community:[{text:"The village of Bocairent itself is stunning — budget at least half a day for village + caves. Caves are the highlight but the Plaza Mayor and church are worth time too.",source:"Hellotickets / visitor reviews",srcClass:"src-unverified",reliability:"★★★ Multiple sources"}],
-    nearby:"Bocairent medieval village · Sierra de Mariola Natural Park · Sant Blai hermitage",
-    url:"https://valldalbaida.com/es/ver/covetes-dels-moros-230"
-  },
-  {
-    id:6,name:"Cuevas de la Villa",town:"Requena",province:"Valencia",km:65,
-    lat:39.489,lng:-1.099,access:"tourist",
-    type:"Historical · Medieval cellars & Civil War shelters",
-    highlight:"Islamic labyrinth — 8th-century grain storage to 1939 air raid shelter",
-    desc:"Beneath Requena's Plaza de la Villa lies a 1.5km network of tunnels dug by hand from the 8th century onwards for grain and wine storage. Later expanded and used as wine cellars, then as Civil War air raid shelters (1936–39). The oldest sections have Moorish carved arches. Now part of Requena's wine tourism circuit — excellent combined with a bodega visit.",
-    duration:"~45 min",temp:"14°C constant",depth:"~10m below street",length:"~1.5km",
-    price:"~€3–5",
-    hours:"Check Requena tourist office — Plaza de la Villa s/n",
-    season:[1,1,1,1,1,1,1,1,1,1,1,1],
-    photo:"",
-    requirements:["Ticket at Requena tourist office — Plaza de la Villa s/n","Guided tour available (strongly recommended)","Mostly wheelchair accessible","All ages — no physical demands"],
-    risks:[],
-    permit_info:"",
-    community:[{text:"Great pairing with a Requena bodega visit — several bodegas within walking distance. The Civil War shelter section with original signage is the most memorable part.",source:"Spanish tourism blogs",srcClass:"src-unverified",reliability:"★★ Few sources"}],
-    nearby:"Requena wine bodegas · Museo del Vino · Old Arab-era street layout",
-    url:"https://www.requena.es/turismo"
-  },
-  {
-    id:7,name:"Cueva del Turche",town:"Buñol",province:"Valencia",km:42,
-    lat:39.415,lng:-0.846,access:"free",
-    type:"Natural · Waterfall cave & swimming",
-    highlight:"Closest cave to Valencia — natural pool in a rock amphitheater",
-    desc:"A geological cave on the Juanes River forming a natural pool and waterfall inside a dramatic rock amphitheater. Very popular for wild swimming in summer. Trail crosses the river twice — check conditions before going. In drought years the waterfall reduces to a trickle but the pool remains.",
-    duration:"2–3 hr round trip",temp:"~18°C inside / ambient",depth:"~20m",length:"~80m accessible",
-    price:"Free",
-    hours:"Natural site — always open. Avoid after heavy rain.",
-    season:[3,3,3,2,1,1,1,1,1,2,3,3],
-    photo:"",
-    requirements:["Free — natural site, no ticket","Good hiking shoes — rocky trail with 2 river crossings","Swimwear and towel in summer","Check water levels — trail floods seriously Nov–Mar","Bring 1.5L+ water — no facilities on trail"],
-    risks:["Trail floods in winter/spring — real drowning risk at river crossings","Slippery rocks near waterfall","River crossings can be waist-deep after rain","No mobile signal on parts of route"],
-    permit_info:"",
-    community:[{text:"Go early in summer — by midday it's packed with locals. Best in late May or early June when water flow is good but crowds haven't arrived. The approach walk through the orange groves is beautiful.",source:"Wikiloc / AllTrails community",srcClass:"src-wikiloc",reliability:"★★★ Multiple GPS tracks with comments"}],
-    nearby:"Buñol village · La Tomatina festival site · Cheste circuit",
-    url:"https://www.alltrails.com/trail/spain/valencia/cueva-del-turche"
-  },
-  {
-    id:8,name:"Cueva Santa de Altura",town:"Altura",province:"Castellón",km:65,
-    lat:39.843,lng:-0.497,access:"free",
-    type:"Spiritual · Cave shrine",
-    highlight:"Cave pilgrimage sanctuary — Patroness of Valencia, miraculous spring",
-    desc:"A natural cave converted into a chapel and pilgrimage site, housing the Virgin de la Cueva Santa — the patroness of Valencia. The spring inside is said to have healing properties. Pilgrims have visited since at least the 13th century. Easy road access — coaches arrive. Inside the cave the chapel has votive offerings and candles.",
-    duration:"~30 min",temp:"~16°C",depth:"Shallow (~15m)",length:"~30m",
-    price:"Free",
-    hours:"Roughly 9am to dusk — verify locally",
-    season:[1,1,1,1,1,1,1,1,1,1,1,1],
-    photo:"",
-    requirements:["Free entry","Respectful dress — active religious site","Accessible by car directly to entrance","Verify hours locally"],
-    risks:[],
-    permit_info:"",
-    community:[],
-    nearby:"Serra d'Espadà Natural Park · Segorbe cathedral · Castellnovo castle",
-    url:"https://www.comunitatvalenciana.com"
-  },
-  {
-    id:9,name:"Cova Tallada",town:"Xàbia (Jávea)",province:"Alicante",km:95,
-    lat:38.741,lng:0.209,access:"permit",
-    type:"Coastal · Sea cave",
-    highlight:"Roman quarry cave — land OR sea access. Seasonal permit required. 2 rescues March 2025.",
-    desc:"Ancient Roman quarry cave inside Cabo de San Antonio Marine Reserve. Cathedral-like interior with light bouncing off turquoise water. Chisel marks from stone quarrying still visible. Accessible TWO ways: by land via path PR-CV 355 from Xàbia or Dénia, OR by kayak/swimming from the sea. Seasonal permit required June 15 – October 15 and Easter/bank holidays.",
-    duration:"Half day",temp:"Sea temperature",depth:"Sea level",length:"~100m",
-    price:"Free (permit required seasonally)",
-    hours:"Permit required: 15 June–15 October + Easter + bank holidays. Max 71 people simultaneously. Book at covatallada.org",
-    season:[3,3,2,1,1,2,2,2,2,1,2,3],
-    photo:"",
-    requirements:["Check if permit required for your dates — covatallada.org/reservas","Land access: senda PR-CV 355 from Xàbia or Dénia (steep, rocky, ~45 min)","Sea access: kayak/SUP/swimming — only in calm conditions (max 0.5m swell)","Kayak hire at Xàbia port — several companies","Bring permit + DNI if required — rangers check","Helmet highly recommended — low rock at cave entry"],
-    risks:["TWO rescues in March 2025 — kayakers trapped by sudden swell, 1 fracture from fall","Swell amplifies inside cave — can capsize kayak with no warning","Slippery rocks at cave mouth — fracture risk","No rescue services inside — self-rescue only","No mobile signal at many points","Marine reserve: no fishing, no anchoring, no touching coral"],
-    permit_info:"Permit system under Orden 7/2020 (Conselleria). Required: 15 Jun–15 Oct, Easter, and bank holidays. Book at covatallada.org/reservas — free. Bring permit + ID on the day. Rangers control access. Companies offering guided kayak trips handle permits for you.",
-    community:[
-      {text:"March 2025: two separate rescues in 48 hours — two kayakers trapped by swell unable to exit, and a hiker with fractured ankle evacuated by helicopter from the access path.",source:"Covatallada.org official news",srcClass:"src-rescue",reliability:"★★★★★ Official rescue reports"},
-      {text:"Sea conditions change fast here — even with calm forecast, swell can build by afternoon. Morning visits are significantly safer. Cancel if you see any white water at the entrance.",source:"Dénia local guide community",srcClass:"src-unverified",reliability:"★★★ Local guides, multiple consistent reports"}
-    ],
-    nearby:"Cabo de San Antonio lighthouse · Xàbia old town · Portitxol beach",
-    url:"https://covatallada.org/reservas/"
-  },
-  {
-    id:10,name:"Cova del Rull",town:"La Vall d'Ebo",province:"Alicante",km:90,
-    lat:38.757,lng:-0.238,access:"tourist",
-    type:"Geological · Speleothem show cave",
-    highlight:"Discovered 1919 when a hunter followed a rabbit underground — 220m, 19m drop",
-    desc:"Discovered by accident in 1919 when hunter José Mengual ('Uncle Rull') chased a rabbit into a hole and fell through. Returned with tools, expanded entrance, found spectacular cave. Opened commercially in 1995 by the Ayuntamiento. Rich in stalactites, stalagmites, and rare cave pearls. One of the 5 key tourist caves in the Valencian Community. Less crowded than Sant Josep.",
-    duration:"~30 min guided",temp:"~16°C",depth:"19m",length:"220m",
-    price:"~€4–6",
-    hours:"Check ahead — sometimes closed Mon/Tue. Limited slots, sells out summer weekends.",
-    season:[1,1,1,1,1,1,1,1,1,1,1,1],
-    photo:"",
-    requirements:["Ticket at entrance","Guided tour — call ahead to confirm opening day","Comfortable shoes","Small groups — book ahead in summer","Check opening days before driving"],
-    risks:[],
-    permit_info:"",
-    community:[{text:"A hidden gem — much more personal experience than Sant Josep. The guide is often just for your group. Cave pearls section is genuinely rare.",source:"Spanish caving enthusiast blogs",srcClass:"src-unverified",reliability:"★★ Few sources but consistent"}],
-    nearby:"Vall d'Ebo village · Font de l'Ebo · Pego-Oliva Natural Park wetlands",
-    url:"https://www.valldebo.es"
-  },
-  {
-    id:11,name:"Cueva de las Calaveras",town:"Benidoleig",province:"Alicante",km:95,
-    lat:38.766,lng:0.043,access:"tourist",
-    type:"Geological · Speleothem show cave",
-    highlight:"150m long show cave — prehistoric animal skulls found inside (Calaveras = Skulls)",
-    desc:"A 150m tourist cave named 'Calaveras' (Skulls) after the prehistoric animal bones found during its discovery. Features stalactites, stalagmites, and an underground river section. One of the 5 key tourist caves of the Valencian Community. Electrified paths and lighting throughout. Near the Río Girona natural park area.",
-    duration:"~30 min guided",temp:"~16°C",depth:"~20m",length:"150m",
-    price:"~€5–7",
-    hours:"Daily — check website for seasonal hours",
-    season:[1,1,1,1,1,1,1,1,1,1,1,1],
-    photo:"",
-    requirements:["Ticket at entrance","Guided or self-guided walk on electrified path","Comfortable shoes","Suitable for all ages including children"],
-    risks:[],
-    permit_info:"",
-    community:[{text:"Worth combining with the surrounding Girona river valley — beautiful landscape and less visited than the Costa Blanca coast nearby.",source:"Spanish travel blogs",srcClass:"src-unverified",reliability:"★★ Few sources"}],
-    nearby:"Río Girona natural area · Pedreguer village · Dénia nearby",
-    url:"https://www.comunitatvalenciana.com/es/inspirate/cuevas-comunitat-valenciana"
-  },
-  {
-    id:12,name:"Cuevas del Canelobre",town:"Busot",province:"Alicante",km:120,
-    lat:38.461,lng:-0.428,access:"tourist",
-    type:"Geological · Speleothem show cave",
-    highlight:"70m high cathedral chamber — one of the largest cave spaces open to tourists in Spain",
-    desc:"The main chamber reaches 70 metres in height — one of the most impressive cave spaces accessible to tourists in Spain. The cave was used as an aircraft engine repair workshop during the Spanish Civil War. Rich stalactite and stalagmite formations. Good lighting design. Slightly beyond the 100km radius but included for its exceptional scale.",
-    duration:"~30 min guided",temp:"~18°C",depth:"~700m altitude",length:"~300m tourist route",
-    price:"~€7–9",
-    hours:"Daily — check website. Closed occasionally for maintenance.",
-    season:[1,1,1,1,1,1,1,1,1,1,1,1],
-    photo:"",
-    requirements:["Ticket at entrance","Guided visit","Stairs involved — moderate mobility required","Suitable for most ages"],
-    risks:[],
-    permit_info:"",
-    community:[{text:"The scale of the main chamber genuinely surprises — photos don't do it justice. The Civil War history adds interest. Go on a weekday to avoid Alicante tourist crowds.",source:"TripAdvisor",srcClass:"src-tripadvisor",reliability:"★★★★ Many reviews"}],
-    nearby:"Alicante city · El Campello coast · Mutxamel village",
-    url:"https://www.cuevasdelcanelobre.com"
-  },
-  {
-    id:13,name:"Cueva Museo Dragut",town:"Cullera",province:"Valencia",km:45,
-    lat:39.157,lng:-0.243,access:"tourist",
-    type:"Historical · Cave museum",
-    highlight:"Sea cave used as corsair hideout — now a museum about Dragut the pirate",
-    desc:"A natural sea cave near Cullera used by the Ottoman corsair Dragut (Turgut Reis) in the 16th century as a lookout and hiding point. Now converted into a small museum about Dragut and the era of Mediterranean piracy. Unusual and family-friendly. Easy access from Cullera beach resort area.",
-    duration:"~30 min",temp:"~18°C",depth:"Sea-level",length:"~50m",
-    price:"~€3–5",
-    hours:"Check Cullera tourism — seasonal",
-    season:[1,1,1,1,1,1,1,1,1,1,1,1],
-    photo:"",
-    requirements:["Small entry fee","Self-guided or guided","Easy access — near beach","Family-friendly"],
-    risks:[],
-    permit_info:"",
-    community:[{text:"Nice add-on if you're already visiting Cullera beach. Not worth a special trip from Valencia but a pleasant 30-min stop.",source:"Valenciabonita 2024",srcClass:"src-unverified",reliability:"★★★ Published article"}],
-    nearby:"Cullera beach and castle · Albufera Natural Park · Sueca rice fields",
-    url:"https://www.valenciabonita.es/2024/06/12/cuevas-en-valencia/"
-  },
-  {
-    id:14,name:"Cueva del Sumidor (Túnel del Sumidor)",town:"Vallada",province:"Valencia",km:76,
-    lat:38.904,lng:-0.655,access:"permit",
-    type:"Geological · Gypsum water cave",
-    highlight:"Deepest gypsum cave on Earth (205m) — guided commercial trips available, rescue 2025",
-    desc:"Scientifically extraordinary — deepest natural cavity in gypsum rock anywhere in the world, formed by sulphuric acid speleogenesis. Active water course throughout. Available as a commercial guided activity for beginners (from age 8–10 with guide companies) — this is NOT expert-only if you go with a reputable guide. However, a 2025 rescue of 4 experienced speleologists shows the serious risks of independent entry.",
-    duration:"4–5 hrs guided",temp:"~12°C",depth:"205m (full system)",length:"1,300m",
-    price:"~€40–60 with guide company",
-    hours:"No fixed hours — book with guide company",
-    season:[1,1,1,2,1,1,1,1,1,1,1,1],
-    photo:"",
-    requirements:["Go with reputable guide company — Tronkos y Barrancos, Rocroi, Everent","Equipment provided: wetsuit, helmet, neoprene boots, headlamp","Minimum age ~8–10 with guide company (check per company)","Physical fitness: basic to medium — marketed as accessible","Independent entry: only for expert cavers with FECV permit"],
-    risks:["2025 rescue: 4 experienced speleologists blocked and required emergency extraction","Active water course — flash flood risk after any rain upstream","Gypsum instability — different from limestone caves","Hypothermia risk in water sections","Do NOT enter independently without expert SRT training for deep sections"],
-    permit_info:"For commercial guided activity: book directly with guide companies (no permit needed — company handles it). For independent technical exploration: FECV permit required at espeleocv.org.es",
-    community:[
-      {text:"April 2025: 4 speleologists blocked inside requiring rescue by bomberos and specialised mountain rescue. Cave water rose unexpectedly.",source:"Descendedor.blogspot / caving news 2025",srcClass:"src-rescue",reliability:"★★★★★ Documented rescue incident"},
-      {text:"As a commercial guided activity it's marketed as 'Level 1, very fun and exciting' — that's accurate IF you're with a quality guide and conditions are dry. Don't go in or after rain.",source:"Everent / Tronkos y Barrancos operator pages",srcClass:"src-official",reliability:"★★★★ Commercial operators"}
-    ],
-    nearby:"Vallada village · Font de la Figuera · Moixent Iberian archaeological site",
-    url:"https://everent.es/actividades/espeleologia-cueva-acuatica-sumidero-vallada-valencia/"
-  },
-  {
-    id:15,name:"Sima del Campillo",town:"Tous",province:"Valencia",km:68,
-    lat:39.052,lng:-0.735,access:"permit",
-    type:"Geological · Largest cave chamber in Valencia",
-    highlight:"8,500m² floor area · 300,000m³ volume — FECV permit, open only Mar 16 – Oct 15",
-    desc:"Contains the single largest cave chamber in the Valencian Community. The main room has a floor area of 8,500 square metres and volume of approximately 300,000 cubic metres. Regulated by FECV with strict seasonal access. Access is 16 March – 15 October only.",
-    duration:"Half day",temp:"~13°C",depth:"~60m",length:"~600m",
-    price:"Free (FECV permit required)",
-    hours:"ONLY accessible 16 March – 15 October. Outside these dates: completely closed.",
-    season:[3,3,1,1,1,1,1,1,1,1,3,3],
-    photo:"",
-    requirements:["FECV permit mandatory — espeleocv.org.es/cavidades-reguladas/","Federado membership or recognised club required","Full technical kit: ropes, harness, helmet, lights","Group of min 3 experienced cavers","Access window: 16 March – 15 October only"],
-    risks:["Significant descent to reach main chamber","Large loose rock formations on ceiling","Remote terrain — rescue access difficult"],
-    permit_info:"Apply via FECV formulario at espeleocv.org.es/storage/2022/05/Formulario_Visita_Rev_140522.pdf. Provide: full names, federation credentials, equipment list, planned dates. Access only 16 March – 15 October. Reference: Decreto 65/2006.",
-    community:[{text:"The Campillo chamber is referenced regularly in Valencian speleology club reports (CELA Ontinyent etc.) as a benchmark — the scale of the room compared to what you imagined from outside is genuinely disorienting.",source:"CelaOntinyent club reports",srcClass:"src-forum",reliability:"★★★ Club publications"}],
-    nearby:"Tous reservoir · Cuevas del Candil y Tornero nearby · Sumacàrcer",
-    url:"https://celaontinyent.es/avenc-sima-del-campillo/"
-  },
-  {
-    id:16,name:"Cuevas del Candil y Tornero",town:"Tous",province:"Valencia",km:68,
-    lat:39.057,lng:-0.727,access:"free",
-    type:"Geological · Beginner speleology",
-    highlight:"Two contrasting caves — best guided intro to caving near Valencia",
-    desc:"Two distinct caves close together. Cueva del Candil: wide spaces and varied formations — good for photos. Cueva del Tornero: narrow passages, crawl-throughs, and short climbs — more physical. Both accessible for total beginners with a guide. Guide companies provide all equipment. Set above the Tous reservoir with excellent views.",
-    duration:"4–5 hrs for both",temp:"~15°C each",depth:"~30m each",length:"Candil ~300m · Tornero ~200m",
-    price:"Free site (guided activity ~€40–50/person)",
-    hours:"Book with guide company — flexible",
-    season:[1,1,1,1,1,2,2,1,1,1,1,1],
-    photo:"",
-    requirements:["Guide company strongly recommended: Oteka Aventura (otekaaventura.es)","All equipment provided by guide","No claustrophobia — Tornero has real crawl-throughs","Old clothes — you will get muddy","All ages 8+ with guide"],
-    risks:["Crawl-throughs in Tornero — tight sections","Slippery surfaces throughout","Uneven terrain"],
-    permit_info:"",
-    community:[{text:"Best intro caving experience near Valencia. Oteka Aventura guides are knowledgeable. Tornero is genuinely tight in places — not for anyone with even mild claustrophobia.",source:"Oteka Aventura operator reviews",srcClass:"src-unverified",reliability:"★★★ Operator page + few independent reviews"}],
-    nearby:"Tous reservoir · Sima del Campillo nearby · Sumacàrcer",
-    url:"https://otekaaventura.es"
-  },
-  {
-    id:17,name:"Cueva de la Sima de Millares",town:"Millares",province:"Valencia",km:55,
-    lat:39.22,lng:-0.89,access:"permit",
-    type:"Geological · Semi-regulated access",
-    highlight:"Key from Albergue Municipal — unusual semi-open system, Decreto 65/2006",
-    desc:"Protected under Decreto 65/2006. Closed by Millares Ayuntamiento to prevent degradation. But unlike most protected caves, access is semi-regulated — you collect the key from the Albergue Municipal de Millares. No formal guide needed but speleological experience recommended for deeper sections.",
-    duration:"1–2 hrs",temp:"~14°C",depth:"~50m",length:"~400m",
-    price:"Free (key collection required)",
-    hours:"Call ahead to arrange key pickup — no spontaneous visit possible",
-    season:[1,1,1,1,1,1,1,1,1,1,1,1],
-    photo:"",
-    requirements:["Call ahead: 96 251 90 78 or 619 841 197","Address: Avda. Sáez Merino s/n, Millares — pick up key before driving to cave","Powerful headlamp + backup mandatory (no electric lighting)","Leave return time with key holder — safety protocol","Spanish required for phone booking"],
-    risks:["Completely unlit — headlamp failure means total darkness","Uneven terrain throughout","Formations fragile — do not touch"],
-    permit_info:"Semi-open system: call Albergue Municipal de Millares (96 251 90 78 or 619 841 197) to arrange key. Free of charge. Key must be returned same day.",
-    community:[],
-    nearby:"Millares gorge hike · Bicorp cave art nearby · Dos Aguas village",
-    url:"https://www.millares.es"
-  },
-  {
-    id:18,name:"Cova Gran de Serra (Soterranya)",town:"Serra",province:"Valencia",km:28,
-    lat:39.71,lng:-0.42,access:"closed",
-    type:"Geological · Bat colony (legally protected)",
-    highlight:"Largest cave in Serra Calderona — home to Microtyphllus Infernalis beetle found nowhere else on Earth",
-    desc:"The largest cave in Serra Calderona Natural Park (1,810m) and second largest in the Valencian Community. Home to bat colonies of endangered species and the Microtyphllus Infernalis — a blind beetle species endemic to this single cave system. Commercially offered as a guided speleology intro by local companies during permitted windows.",
-    duration:"~2 hrs with guide (when open)",temp:"~14°C",depth:"100m",length:"1,810m",
-    price:"~€30–40 with guide company",
-    hours:"Closed approximately February–August (bat breeding). Check Serratotnatura.com for current openings.",
-    season:[3,3,3,3,3,3,3,3,1,1,1,3],
-    photo:"",
-    requirements:["Only visit with authorised guide during permitted season","Book via Serratotnatura or similar local operator","Disturbance of bat colony = criminal offence (Ley 42/2007)","Technical equipment provided by guide"],
-    risks:["Bat colony disturbance = criminal offence — fines €10,000–€100,000","Deep sections require technical equipment","ZEC protected zone (Decreto 36/2013)"],
-    permit_info:"Commercial guided access via Serratotnatura.com during non-bat season. Research access: Conselleria de Medi Ambient — Servei de Vida Silvestre, Valencia.",
-    community:[{text:"Serra Calderona has multiple small accessible cavities used for intro caving. The guides at Serratotnatura know which are open and safe at any given time — always call before heading up.",source:"Serratotnatura operator",srcClass:"src-official",reliability:"★★★★ Local operators with direct knowledge"}],
-    nearby:"Serra Calderona Natural Park · Portaceli monastery · Náquera village",
-    url:"https://www.serratotnatura.com/turisme-actiu/espeleologia/"
-  },
-  {
-    id:19,name:"Cova de la Sarsa",town:"Bocairent",province:"Valencia",km:73,
-    lat:38.772,lng:-0.598,access:"permit",
-    type:"Archaeological · Neolithic (Decreto 65/2006)",
-    highlight:"Richest Neolithic pottery deposit in Eastern Spain — 6th millennium BC",
-    desc:"One of the most important Neolithic caves in the western Mediterranean. Excavations have uncovered cardial pottery, bone tools, ornaments, and human remains from the 5th–6th millennium BC. 716m long, 43m depth. Inside Sierra de Mariola Natural Park. Highest Valencian cave protection under Decreto 65/2006. Bat colony restrictions Feb–Aug.",
-    duration:"~2 hrs with permit",temp:"~14°C",depth:"43m",length:"716m",
-    price:"Free (permit required)",
-    hours:"Bat restrictions: very limited access Feb–Aug. Best window: Sep–Jan.",
-    season:[2,3,3,3,3,3,3,3,1,1,1,2],
-    photo:"",
-    requirements:["Permit: Conselleria de Medi Ambient Valencia","Technical equipment: harness, helmet, LED lighting","Only accessible with experienced speleology guide","Bat breeding restrictions Feb–Aug — access heavily restricted","FECV membership aids permit approval"],
-    risks:["Technical descents — ropes required","Protected bat colonies (Rhinolophus sp.) — disturbance is criminal offence","Fragile Neolithic archaeological stratigraphy"],
-    permit_info:"Apply to: Conselleria de Medi Ambient, Agua, Infraestructures i Territori, Valencia. Reference Decreto 65/2006. Provide: full name, speleology credentials, proposed dates, group size. Allow 3–4 weeks.",
-    community:[],
-    nearby:"Sierra de Mariola Natural Park · Bocairent village · Font Bona",
-    url:"https://bocairent.org"
-  },
-  {
-    id:20,name:"Coves de Parpalló",town:"Gandia",province:"Valencia",km:65,
-    lat:38.91,lng:-0.188,access:"permit",
-    type:"Archaeological · Palaeolithic (research only)",
-    highlight:"5,000+ engraved tablets — world's largest collection of Palaeolithic portable art",
-    desc:"Among the most significant Palaeolithic sites in Europe. Between 1929–1931 archaeologist Luis Pericot excavated over 5,000 engraved limestone tablets with animal figures — the largest collection of Palaeolithic portable art on Earth. Physical access is restricted to researchers. See the tablets at the Museu de Prehistòria de Valencia (no permit needed for museum).",
-    duration:"Research only",temp:"~14°C",depth:"~30m",length:"~250m",
-    price:"N/A (research only). Museum visit: free–€2",
-    hours:"No public access to cave. Museum: check museuprehistoriavalencia.es",
-    season:[2,2,2,2,2,2,2,2,2,2,2,2],
-    photo:"",
-    requirements:["No public access to cave","Research permit: Museu de Prehistòria de Valencia — Carrer de la Corona 36","Academic affiliation required","Written application with CV and project outline"],
-    risks:["Criminal offence to access without permit","Cliff terrain — fall risk","Protected archaeological stratigraphy"],
-    permit_info:"Contact: Museu de Prehistòria de Valencia, Tel: 963 883 599. Written research application with academic credentials. Processing: 1–3 months. Visit the MUSEUM to see the tablets without a permit.",
-    community:[],
-    nearby:"Museu de Prehistòria de Valencia (see the tablets!) · Gandia beach · Monasteri de Sant Jeroni",
-    url:"https://www.museuprehistoriavalencia.es"
-  },
-  {
-    id:21,name:"Cova Negra de Xàtiva",town:"Xàtiva",province:"Valencia",km:60,
-    lat:38.985,lng:-0.516,access:"permit",
-    type:"Archaeological · Palaeolithic (Neanderthal)",
-    highlight:"Neanderthal teeth and bones found — occupied 100,000 to 30,000 BC",
-    desc:"One of the most significant Palaeolithic sites in Spain. Neanderthal remains including teeth and bones, plus Mousterian stone tools, found in excavations from the 1940s to present. Active archaeological excavation zone. The cave mouth is visible from the road but fenced.",
-    duration:"Research only",temp:"~14°C",depth:"Horizontal",length:"~80m",
-    price:"N/A (research only)",
-    hours:"No public access — fenced archaeological zone",
-    season:[2,2,2,2,2,2,2,2,2,2,2,2],
-    photo:"",
-    requirements:["No public tourist access","Archaeological permit: Conselleria de Cultura","Academic credentials mandatory","Cave visible from outside — do not breach fencing"],
-    risks:["Criminal offence to breach archaeological site fencing","Cliff terrain — fall risk"],
-    permit_info:"Research access: Conselleria de Cultura, Museu de Prehistòria de Valencia. The Museu Municipal de Xàtiva displays some finds — no permit needed.",
-    community:[],
-    nearby:"Xàtiva castle (one of Spain's finest) · Xàtiva old town · Museu Municipal Xàtiva",
-    url:"https://www.xativa.es"
-  },
-  {
-    id:22,name:"Cova del Bolomor",town:"Tavernes de la Valldigna",province:"Valencia",km:60,
-    lat:38.957,lng:-0.268,access:"permit",
-    type:"Archaeological · Lower Palaeolithic",
-    highlight:"Oldest evidence of fire use in Europe — 200,000–100,000 BC",
-    desc:"Contains evidence of fire use by archaic humans dated to approximately 200,000 BC — among the oldest in Europe. Fauna remains and lithic tools spanning 100,000 years of occupation. Active excavation site managed by the Museu de Prehistòria de Valencia. Not a tourist cave — a working archaeological dig.",
-    duration:"Research only",temp:"~15°C",depth:"N/A (horizontal cliff cave)",length:"~100m",
-    price:"N/A",
-    hours:"Research only — check Museu de Prehistòria",
-    season:[2,2,2,2,2,2,2,2,2,2,2,2],
-    photo:"",
-    requirements:["Research permit from Museu de Prehistòria de Valencia","Archaeological credentials required","Active excavation — no casual visits"],
-    risks:["Criminal offence without permit","Fragile stratigraphy"],
-    permit_info:"Contact Museu de Prehistòria de Valencia — same process as Parpalló. The site is viewable from the road.",
-    community:[],
-    nearby:"Tavernes de la Valldigna beach · Simat de la Valldigna monastery · Gandia",
-    url:"https://www.museuprehistoriavalencia.es"
-  },
-  {
-    id:23,name:"Túnel de Carcalín",town:"Buñol",province:"Valencia",km:45,
-    lat:39.408,lng:-0.812,access:"permit",
-    type:"Geological · Regulated cave (FECV / Decreto 65/2006)",
-    highlight:"FECV-regulated cavity near Buñol — permit required",
-    desc:"A regulated cave cavity near Buñol in the same area as the Cueva del Turche. Listed in the FECV catalogue of regulated cavities under Decreto 65/2006. Access requires FECV permit or Conselleria authorisation. Bat colony presence is a likely reason for its regulated status.",
-    duration:"~2 hrs",temp:"~14°C",depth:"Unknown publicly",length:"Unknown publicly",
-    price:"Free (permit required)",
-    hours:"Seasonal restrictions possible — check FECV",
-    season:[1,1,1,1,1,1,1,1,1,1,1,1],
-    photo:"",
-    requirements:["FECV permit required — espeleocv.org.es/cavidades-reguladas/","Speleological equipment","Experienced group"],
-    risks:["Bat colony possible — check permit conditions","Regulated cave — heavy fines for unauthorised access"],
-    permit_info:"Apply via FECV — espeleocv.org.es/cavidades-reguladas/. Reference Decreto 65/2006.",
-    community:[],
-    nearby:"Buñol village · Cueva del Turche · Cheste",
-    url:"https://espeleocv.org.es/cavidades-reguladas/"
-  },
-  {
-    id:24,name:"Sima Colomera",town:"Bugarra",province:"Valencia",km:50,
-    lat:39.588,lng:-0.876,access:"permit",
-    type:"Geological · Sima vertical (FECV regulated)",
-    highlight:"Vertical shaft in Serra Calderona foothills — FECV permit required",
-    desc:"A vertical shaft (sima) in the Bugarra area listed in the FECV regulated cavities catalogue. Requires FECV permit and technical equipment. Part of the significant network of vertical caves in the Valencia province that are under Decreto 65/2006 protection.",
-    duration:"Half day technical",temp:"~13°C",depth:"Unknown publicly",length:"Unknown publicly",
-    price:"Free (permit required)",
-    hours:"Check FECV for seasonal restrictions",
-    season:[1,1,1,1,1,1,1,1,1,1,1,1],
-    photo:"",
-    requirements:["FECV permit mandatory","Full SRT technical equipment","Minimum group of 3 experienced cavers"],
-    risks:["Vertical descent — SRT technique required","Remote access"],
-    permit_info:"FECV: espeleocv.org.es/cavidades-reguladas/",
-    community:[],
-    nearby:"Bugarra village · Serra Calderona Natural Park · Gestalgar",
-    url:"https://espeleocv.org.es/cavidades-reguladas/"
-  },
-  {
-    id:25,name:"Cueva del Lago Ayora",town:"Ayora",province:"Valencia",km:100,
-    lat:39.059,lng:-1.051,access:"permit",
-    type:"Geological · Lake cave (FECV regulated)",
-    highlight:"Underground lake cave near Ayora — FECV regulated",
-    desc:"A cave containing an underground lake, located in the Ayora area. Listed in the FECV catalogue of regulated cavities. The lake element makes it particularly sensitive to bat colony presence and hydrological protection requirements. Permit required from FECV.",
-    duration:"~2 hrs",temp:"~14°C",depth:"Unknown publicly",length:"Unknown publicly",
-    price:"Free (permit required)",
-    hours:"Seasonal restrictions — check FECV",
-    season:[1,1,1,1,1,1,1,1,1,1,1,1],
-    photo:"",
-    requirements:["FECV permit required","Technical equipment","Respect for hydrological environment — no contamination"],
-    risks:["Underground water — drowning risk if water rises","Bat colony protection conditions"],
-    permit_info:"FECV: espeleocv.org.es/cavidades-reguladas/",
-    community:[],
-    nearby:"Ayora village · Embalse de Embarcaderos · Cueva de Don Juan nearby",
-    url:"https://espeleocv.org.es/cavidades-reguladas/"
-  },
-  {
-    id:26,name:"Cova de les Meravelles",town:"Llombai",province:"Valencia",km:38,
-    lat:39.275,lng:-0.636,access:"permit",
-    type:"Geological · Regulated cave near Valencia",
-    highlight:"Closest regulated cave to Valencia city — Decreto 65/2006",
-    desc:"One of the closest regulated caves to Valencia city, located near Llombai. Listed in the FECV catalogue under Decreto 65/2006. The name (Cave of Wonders) suggests notable formations. Bat colony presence is likely given the regulated status.",
-    duration:"~1–2 hrs",temp:"~15°C",depth:"Unknown publicly",length:"Unknown publicly",
-    price:"Free (permit required)",
-    hours:"Seasonal bat restrictions likely — check FECV",
-    season:[1,1,2,2,2,2,2,2,1,1,1,1],
-    photo:"",
-    requirements:["FECV permit required","Caving equipment","Experienced group"],
-    risks:["Bat colony — disturbance = criminal offence","Regulated zone"],
-    permit_info:"FECV: espeleocv.org.es/cavidades-reguladas/. Closest regulated cave to Valencia for clubs wishing to practice.",
-    community:[],
-    nearby:"Llombai village · L'Alcúdia · Alzira",
-    url:"https://espeleocv.org.es/cavidades-reguladas/"
-  },
-  {
-    id:27,name:"Mina Virgen del Amparo",town:"Artana",province:"Castellón",km:55,
-    lat:39.869,lng:-0.276,access:"closed",
-    type:"Abandoned mine · Lead & silver (19th century)",
-    highlight:"Former lead/silver mine — structurally unsafe, bat colony, do not enter",
-    desc:"Old lead and silver mine worked in the 18th–19th centuries in the Serra d'Espadà foothills. Now abandoned and derelict with documented roof collapses. Bat colonies roost in deeper sections. View from outside only.",
-    duration:"N/A — do not enter",temp:"Variable / damp",depth:"Unknown",length:"Unknown",
-    price:"N/A",
-    hours:"N/A",
-    season:[3,3,3,3,3,3,3,3,3,3,3,3],
-    photo:"",
-    requirements:["DO NOT ENTER — multiple documented structural failures","View exterior only — no formal prohibition but full personal liability"],
-    risks:["Roof collapse — documented history in this mine","Rotted timber pit props — can fail without warning","CO2 and methane buildup in dead-end sections","No lighting — instant disorientation","Bat disturbance may be criminal offence","Rescue would take hours"],
-    permit_info:"No public permit available. Dangerous abandoned structure. Spanish Ley 22/1973 de Minas holds entrants fully responsible for accidents.",
-    community:[],
-    nearby:"Serra d'Espadà Natural Park · Artana castle ruins · Coves de Sant Josep nearby",
-    url:"https://activo.comunitatvalenciana.com"
-  },
-  {
-    id:28,name:"Mines de Ferro de Serra Calderona",town:"Serra / Marines",province:"Valencia",km:35,
-    lat:39.68,lng:-0.44,access:"closed",
-    type:"Abandoned mine · 19th-century iron extraction",
-    highlight:"Network of iron mine tunnels in Serra Calderona — multiple roof collapses, do not enter",
-    desc:"Tunnels and shafts from 19th–20th century iron extraction visible across the Serra Calderona hills. Multiple entrance points exist. Completely abandoned — zero safety infrastructure. Multiple roof collapses documented. Bat colonies present.",
-    duration:"N/A — do not enter",temp:"Variable",depth:"Unknown (shafts present)",length:"Unknown",
-    price:"N/A",
-    hours:"N/A",
-    season:[3,3,3,3,3,3,3,3,3,3,3,3],
-    photo:"",
-    requirements:["DO NOT ENTER","Multiple documented roof collapses","Vertical shafts with poor fencing near some entrances — surface fall risk","View from safe distance only"],
-    risks:["Immediate roof collapse risk","Vertical shafts hidden under vegetation","CO2 and methane in sealed sections","No mobile signal inside","Rescue takes hours"],
-    permit_info:"No entry permitted. Full personal liability under Spanish Ley 22/1973 de Minas.",
-    community:[],
-    nearby:"Serra Calderona Natural Park hiking · Portaceli monastery · Serra village",
-    url:"https://www.serracalderona.es"
-  },
-  {
-    id:29,name:"Coves del Barranc de l'Infern",town:"Vall de Laguar",province:"Alicante",km:90,
-    lat:38.767,lng:0.017,access:"free",
-    type:"Natural · Gorge cave series",
-    highlight:"Multiple cave openings along 'Hell's Ravine' — one of the best gorge hikes in the region",
-    desc:"Multiple cave openings along the spectacular Barranc de l'Infern (Hell's Ravine) gorge. Natural features of the limestone cliff faces, used historically by shepherds. Access via the 12km circular route from Fleix hamlet. The gorge is the main attraction — the caves are a bonus.",
-    duration:"5–6 hrs full route",temp:"Outdoor / ambient",depth:"Shallow",length:"Multiple openings",
-    price:"Free",
-    hours:"Natural site — always open. Start early in summer.",
-    season:[2,2,1,1,1,2,2,2,1,1,1,2],
-    photo:"",
-    requirements:["Start at Fleix hamlet — GPS 38.7667, 0.0167","Good hiking boots — technical rocky trail","2L+ water — no facilities on route","Start before 9am in summer","Circular route: 12km, 400m elevation gain"],
-    risks:["Flash flood risk in gorge in heavy rain","Rocky uneven trail — ankle injury risk","Long exposed route — heat risk in summer","No rescue access into deepest gorge sections"],
-    permit_info:"",
-    community:[{text:"One of the most beautiful hikes in the Valencian Community. The gorge is genuinely dramatic. Go in spring for green vegetation and water flow. Take the route clockwise from Fleix for the best views early.",source:"Wikiloc community",srcClass:"src-wikiloc",reliability:"★★★★ Many GPS tracks with notes"}],
-    nearby:"Vall de Laguar village · Xàbia coast · Fonts de l'Algar",
-    url:"https://www.valldlaguar.com"
-  }
+const CAVES=[
+{id:1,name:"Coves de Sant Josep",town:"La Vall d'Uixó",prov:"Castellón",km:68,lat:39.823,lng:-0.252,access:"tourist",kind:"cave",
+highlight:"Longest navigable underground river in Europe — 2,700m",
+type:"Geological · River cave",
+desc:"Boat ride through cathedral-like chambers carved by 4km of underground river. Structures named 'La Catedral', 'Lago Azul' and 'La Gran Cascada'. 2024 new 'Origen' activity opens previously unseen galleries. Inhabited 17,000 years ago — Magdalenian cave art at entrance declared UNESCO.",
+epic:10,danger:1,size:10,wet:5,
+duration:"45 min (boat) / 2–3 hr (kayak)",temp:"20°C constant",depth:"River level",length:"2,700m navigable · 4km+ total",
+price:"€18 adult · €12 child · Free <3",
+hours:"Jan: daily 10:00–14:30. Feb–Jun & Sep–Oct: weekdays 10:00–15:40, weekends 9:20–17:00. Jul–Aug extended. Closes for flooding.",
+season:[1,1,1,1,2,2,2,2,1,1,1,1],
+photo:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Coves_de_Sant_Josep_9.jpg/800px-Coves_de_Sant_Josep_9.jpg",
+entrances:[{lat:39.823,lng:-0.252,name:"Main boat entrance"},{lat:39.824,lng:-0.251,name:"Kayak / Origen entrance"}],
+operators:[
+  {name:"Official (covesdesantjosep.es)",acts:["Boat tour (standard)","EspeleoKayak","Origen (2024 virgin galleries)"],price:"€18 boat / €35+ kayak",url:"https://covesdesantjosep.es/tarifas-y-horarios/"}
+],
+air:{notes:"Good ventilation throughout tourist route — 20°C stable air. CO2 buildup documented in deep unexplored sections beyond tourist route."},
+risks:[],permit_info:"",
+community:[
+  {t:"Up to 6 boats × 15 people simultaneously in peak season — feels industrialised. Photos prohibited on boat but allowed on return walk.",src:"TripAdvisor",sc:"st-trip",rel:"★★★★ Consistent across 200+ reviews"},
+  {t:"Can close without notice during heavy rain — cave floods fast. Always check website or call the morning of your visit in autumn/winter.",src:"Official website",sc:"st-off",rel:"★★★★★ Official"}
+],
+nearby:"Serra d'Espadán Natural Park · Eslida · Onda ceramics museum",
+url:"https://covesdesantjosep.es/tarifas-y-horarios/",
+videos:[{title:"Coves de Sant Josep — official tour footage",url:"https://www.youtube.com/results?search_query=Coves+de+Sant+Josep+cueva+interior"}]},
+
+{id:2,name:"Cuevas del Canelobre",town:"Busot",prov:"Alicante",km:120,lat:38.461,lng:-0.428,access:"tourist",kind:"cave",
+highlight:"70m-high cathedral chamber — one of the tallest cave vaults open to tourists in Spain",
+type:"Geological · Show cave",
+desc:"The main chamber rises 70m — like entering a Gothic cathedral carved by nature. Total interior space over 80,000m². Used as an aircraft engine repair workshop during the Spanish Civil War. Rich stalactites and stalagmites with exceptional natural acoustics; concerts are held inside. 700m above sea level.",
+epic:9,danger:1,size:9,wet:1,
+duration:"~30 min guided",temp:"~18°C constant",depth:"~700m altitude",length:"~300m tourist route",
+price:"~€7–9",hours:"Daily — check cuevasdelcanelobre.com. Closed occasionally for maintenance.",
+season:[1,1,1,1,1,1,1,1,1,1,1,1],
+photo:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Cueva_de_Canelobre%2C_Alicante.jpg/800px-Cueva_de_Canelobre%2C_Alicante.jpg",
+entrances:[{lat:38.461,lng:-0.428,name:"Main tourist entrance"}],
+operators:[{name:"Official — cuevasdelcanelobre.com",acts:["Guided cave tour","Concert events"],price:"€7–9",url:"https://www.cuevasdelcanelobre.com"}],
+air:{notes:"Excellent natural ventilation through upper fissures. No reported air quality issues. 18°C stable."},
+risks:[],permit_info:"",
+community:[{t:"The scale of the main chamber is genuinely shocking. Photos don't capture it. Go midweek to avoid Alicante tourist buses.",src:"TripAdvisor",sc:"st-trip",rel:"★★★★ 100+ reviews"}],
+nearby:"Alicante city · El Campello coast · Mutxamel village",
+url:"https://www.cuevasdelcanelobre.com",
+videos:[{title:"Cueva del Canelobre — interior footage",url:"https://www.youtube.com/results?search_query=Cueva+Canelobre+Busot+interior"}]},
+
+{id:3,name:"Cuevas de la Araña",town:"Bicorp",prov:"Valencia",km:80,lat:39.183,lng:-0.958,access:"permit",kind:"arch",
+highlight:"UNESCO World Heritage · Oldest honey harvesting art on Earth — 10,000 BC",
+desc:"Man of Bicorp painting (10,000–8,000 BC) shows a human climbing rope ladder to harvest honey from a cliff hive surrounded by bees — one of the most cited pieces of prehistoric art in the world. Inside Macizo del Caroig Natural Park. Ecomuseo de Bicorp manages all visits.",
+epic:9,danger:2,size:2,wet:1,
+duration:"~3 hrs (depart 10:30 from Ecomuseo)",temp:"~15°C",depth:"Horizontal",length:"~150m",
+price:"Ask Ecomuseo — guided package",hours:"Wed–Sun. Cave visits depart 10:30. Closed Mon–Tue.",
+season:[1,1,1,1,1,2,2,1,1,1,1,1],
+photo:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Cueva_de_la_ara%C3%B1a.jpg/800px-Cueva_de_la_ara%C3%B1a.jpg",
+entrances:[{lat:39.183,lng:-0.958,name:"Cave entrance (guided only)"}],
+operators:[{name:"Ecomuseo de Bicorp",acts:["Guided cultural visit — 3 hrs","Valley walk and mirador"],price:"Package price — ask ecomuseo",url:"https://www.ecomuseodebicorp.com/paquete-cuevas-de-la-arana/"}],
+air:{notes:"Open cliff abrigo — ambient air, no enclosure issues."},
+risks:["Exposed mountain trail — sun and heat in summer","Rocky terrain to cave","Canyon overlooks — stay on path","Flash photography causes irreversible pigment damage"],
+permit_info:"Book at ecomuseodebicorp.com. Guided visit only. Small groups.",
+community:[{t:"The 'Man of Bicorp' figure is about 15cm — smaller than you expect. The valley walk is as impressive as the art itself. Bring 2L water.",src:"Spain.info / aggregated reviews",sc:"st-unv",rel:"★★★ Several sources"}],
+nearby:"Macizo del Caroig · Bicorp village · Júcar river",
+url:"https://www.ecomuseodebicorp.com/paquete-cuevas-de-la-arana/",
+videos:[{title:"Cuevas de la Araña Bicorp — documentary",url:"https://www.youtube.com/results?search_query=Cuevas+de+la+Arana+Bicorp+arte+rupestre"}]},
+
+{id:4,name:"Covetes del Moro",town:"Bocairent",prov:"Valencia",km:73,lat:38.779,lng:-0.602,access:"tourist",kind:"arch",
+highlight:"53 hand-carved Arab cliff caves — 8th–13th century grain storage, €1.50",
+desc:"53 small caves carved into a vertical cliff face in the Arab period (8th–13th century AD). Walk along the cliff face and squeeze between chambers. Part of Bocairent's medieval tourist route. Closed Mondays. One of the most photogenic sites in the Valencia interior.",
+epic:7,danger:2,size:3,wet:1,
+duration:"1–1.5 hrs",temp:"Outdoor",depth:"3–5m",length:"~60m cliff face",
+price:"€1.50 adult",hours:"Closed Monday. Tue–Sun 11:00–14:00. Sat–Sun also 16:30–19:00.",
+season:[1,1,1,1,2,2,2,2,1,1,1,1],
+photo:"",
+entrances:[{lat:38.779,lng:-0.602,name:"Main cliff path entrance"}],
+operators:[{name:"Bocairent Tourism",acts:["Self-guided cliff walk","Combined village tour"],price:"€1.50",url:"https://valldalbaida.com/es/ver/covetes-dels-moros-230"}],
+air:{notes:"Open cliff face — no enclosure, ambient air."},
+risks:["Exposed cliff path — don't force if you have vertigo","Narrow passages between chambers"],
+permit_info:"",
+community:[{t:"Budget at least half a day: village + caves. The Plaza Mayor and church are worth time too. Parking is tight — arrive early in summer.",src:"Hellotickets / travel blogs",sc:"st-unv",rel:"★★★ Multiple sources"}],
+nearby:"Sierra de Mariola · Bocairent medieval village",
+url:"https://valldalbaida.com/es/ver/covetes-dels-moros-230",
+videos:[]},
+
+{id:5,name:"Cuevas de la Villa",town:"Requena",prov:"Valencia",km:65,lat:39.489,lng:-1.099,access:"tourist",kind:"cave",
+highlight:"8th-century Islamic labyrinth — grain store to Civil War air raid shelter",
+desc:"1.5km hand-dug tunnel network beneath Requena's medieval old town — started as Arab grain and wine storage, expanded over centuries, used as Civil War air raid shelters 1936–39. The oldest sections have Moorish carved arches. Part of Requena's wine tourism circuit.",
+epic:6,danger:1,size:5,wet:1,
+duration:"~45 min",temp:"14°C constant",depth:"~10m below street",length:"~1.5km",
+price:"~€3–5",hours:"Check Requena tourist office — Plaza de la Villa s/n",
+season:[1,1,1,1,1,1,1,1,1,1,1,1],
+photo:"",
+entrances:[{lat:39.489,lng:-1.099,name:"Tourist entrance — Plaza de la Villa"}],
+operators:[{name:"Requena Tourism",acts:["Guided historical tour","Combined bodega visit"],price:"~€3–5",url:"https://www.requena.es/turismo"}],
+air:{notes:"Good ventilation in tourist sections. Sealed Civil War sections have elevated CO2 — not accessible to public."},
+risks:[],permit_info:"",
+community:[{t:"Great combined with a Requena bodega — several within walking distance. Civil War shelter section with original signage is the most memorable.",src:"Spanish tourism blogs",sc:"st-unv",rel:"★★ Few sources"}],
+nearby:"Requena bodegas · Museo del Vino · Arab street layout",
+url:"https://www.requena.es/turismo",
+videos:[]},
+
+{id:6,name:"Cueva del Turche",town:"Buñol",prov:"Valencia",km:42,lat:39.415,lng:-0.846,access:"free",kind:"cave",
+highlight:"Closest wild cave to Valencia — waterfall, natural pool, summer swimming",
+desc:"Natural cave and pool formed by the Juanes River inside a dramatic rock amphitheater. Very popular wild swimming spot in summer. Trail crosses the river twice. In wet season there is a proper waterfall. Check water levels before going — trail floods seriously in winter.",
+epic:7,danger:3,size:2,wet:3,
+duration:"2–3 hr round trip",temp:"~18°C inside / ambient",depth:"~20m",length:"~80m accessible",
+price:"Free",hours:"Natural site — always open. Avoid after heavy rain.",
+season:[3,3,3,2,1,1,1,1,1,2,3,3],
+photo:"",
+entrances:[{lat:39.415,lng:-0.846,name:"Trailhead parking"}],
+operators:[],
+air:{notes:"Natural cave — good air circulation. No issues reported."},
+risks:["Trail floods seriously in winter/spring — real drowning risk at crossings","Slippery rocks near waterfall","No mobile signal on parts of route"],
+permit_info:"",
+community:[{t:"Go early in summer — packed by midday. Best late May/early June when water flow is good but crowds absent. The orange grove approach is beautiful.",src:"Wikiloc community",sc:"st-wiki",rel:"★★★ Multiple GPS tracks with notes"}],
+nearby:"Buñol · La Tomatina festival site · Cheste circuit",
+url:"https://www.alltrails.com/trail/spain/valencia/cueva-del-turche",
+videos:[]},
+
+{id:7,name:"Cueva Santa de Altura",town:"Altura",prov:"Castellón",km:65,lat:39.843,lng:-0.497,access:"free",kind:"arch",
+highlight:"Cave pilgrimage shrine — Patroness of Valencia, miraculous spring since 13th century",
+desc:"Natural cave housing the Virgin de la Cueva Santa, patroness of Valencia and of speleologists worldwide. Healing spring inside. Easy road access. Active religious site with votive offerings and candles.",
+epic:5,danger:1,size:1,wet:1,
+duration:"~30 min",temp:"~16°C",depth:"Shallow ~15m",length:"~30m",
+price:"Free",hours:"Approx 9am–dusk. Verify locally.",
+season:[1,1,1,1,1,1,1,1,1,1,1,1],
+photo:"",entrances:[{lat:39.843,lng:-0.497,name:"Cave shrine entrance"}],operators:[],air:{notes:"Ambient — good ventilation."},risks:[],permit_info:"",community:[],
+nearby:"Serra d'Espadà · Segorbe cathedral",url:"https://www.comunitatvalenciana.com",videos:[]},
+
+{id:8,name:"Cova Tallada",town:"Xàbia (Jávea)",prov:"Alicante",km:95,lat:38.741,lng:0.209,access:"permit",kind:"cave",
+highlight:"Roman quarry cave open to the sea — 2 rescues March 2025. Permit required June–Oct",
+desc:"Ancient Roman quarry cave inside Cabo de San Antonio Marine Reserve with cathedral interior open to the Mediterranean. Chisel marks still visible. Accessible by land path PR-CV 355 (steep, 45 min) OR by kayak/swim. Seasonal permit required mid-June to mid-October.",
+epic:9,danger:4,size:3,wet:3,
+duration:"Half day",temp:"Sea temperature",depth:"Sea level",length:"~100m",
+price:"Free (permit required seasonally)",hours:"Permit: 15 Jun–15 Oct + Easter + bank holidays. Max 71 people. Book covatallada.org",
+season:[3,3,2,1,1,2,2,2,2,1,2,3],
+photo:"",
+entrances:[{lat:38.741,lng:0.209,name:"Sea cave mouth"},{lat:38.745,lng:0.204,name:"Land path start (PR-CV 355)"}],
+operators:[
+  {name:"Local kayak companies (Xàbia port)",acts:["Guided sea kayak to cave","SUP paddle","Snorkel tour"],price:"~€20–35",url:"https://covatallada.org/reservas/"}
+],
+air:{notes:"Open sea cave — excellent ventilation. No air quality concerns inside. Main risks are physical (swell, slippery rocks), not atmospheric."},
+risks:["2 rescues March 2025 — kayakers trapped by sudden swell","Swell amplifies inside cave — can capsize instantly","Slippery rocks at cave mouth","No rescue services inside","Marine reserve: no fishing, no anchoring"],
+permit_info:"System under Orden 7/2020. Book at covatallada.org/reservas — free. Bring permit + DNI. Rangers check. Guided kayak companies handle permit for you.",
+community:[
+  {t:"March 2025: two rescues in 48 hours — two kayakers trapped by swell, one hiker fractured ankle on access path evacuated by helicopter.",src:"Covatallada.org official 2025",sc:"st-resc",rel:"★★★★★ Official rescue reports"},
+  {t:"Morning visits are significantly safer — swell builds in the afternoon even on 'calm' forecast days.",src:"Dénia local guides",sc:"st-unv",rel:"★★★ Consistent local advice"}
+],
+nearby:"Cabo de San Antonio lighthouse · Xàbia old town",
+url:"https://covatallada.org/reservas/",
+videos:[{title:"Cova Tallada kayak inside footage",url:"https://www.youtube.com/results?search_query=Cova+Tallada+kayak+inside"}]},
+
+{id:9,name:"Cova del Rull",town:"La Vall d'Ebo",prov:"Alicante",km:90,lat:38.757,lng:-0.238,access:"tourist",kind:"cave",
+highlight:"Discovered 1919 — hunter chased rabbit underground, 220m, rare cave pearls",
+desc:"José Mengual ('Uncle Rull') fell through a hole chasing a rabbit in 1919, returned with tools, found spectacular cave. Reopened commercially 1995. Rich in stalactites, stalagmites, and rare cave pearls. Less crowded than Sant Josep. One of 5 key tourist caves of the Valencian Community.",
+epic:7,danger:1,size:3,wet:1,
+duration:"~30 min guided",temp:"~16°C",depth:"19m",length:"220m",
+price:"~€4–6",hours:"Check ahead — sometimes closed Mon/Tue. Limited slots.",
+season:[1,1,1,1,1,1,1,1,1,1,1,1],photo:"",
+entrances:[{lat:38.757,lng:-0.238,name:"Tourist entrance"}],
+operators:[{name:"Ajuntament de Vall d'Ebo",acts:["Guided tour"],price:"~€4–6",url:"https://www.valldebo.es"}],
+air:{notes:"Well-ventilated show cave. No air quality issues reported."},
+risks:[],permit_info:"",
+community:[{t:"A hidden gem — often just your group with the guide. Cave pearls section is genuinely rare.",src:"Caving enthusiast blogs",sc:"st-unv",rel:"★★ Few sources, consistent"}],
+nearby:"Vall d'Ebo village · Barranc de l'Infern hike nearby",
+url:"https://www.valldebo.es",videos:[]},
+
+{id:10,name:"Cueva de las Calaveras",town:"Benidoleig",prov:"Alicante",km:95,lat:38.766,lng:0.043,access:"tourist",kind:"cave",
+highlight:"'Cave of Skulls' — prehistoric animal bones found on discovery, show cave near Dénia",
+desc:"150m tourist cave named after prehistoric animal skulls found during discovery. Features stalactites, stalagmites, and an underground stream section. Electrified paths throughout. Near Río Girona natural area.",
+epic:6,danger:1,size:3,wet:2,
+duration:"~30 min guided",temp:"~16°C",depth:"~20m",length:"150m",
+price:"~€5–7",hours:"Daily — check website for seasonal hours",
+season:[1,1,1,1,1,1,1,1,1,1,1,1],photo:"",
+entrances:[{lat:38.766,lng:0.043,name:"Main tourist entrance"}],
+operators:[{name:"Official show cave",acts:["Guided tour"],price:"€5–7",url:"https://www.comunitatvalenciana.com/es/inspirate/cuevas-comunitat-valenciana"}],
+air:{notes:"Electrified show cave with good ventilation."},
+risks:[],permit_info:"",
+community:[{t:"Worth combining with Río Girona valley hike. Less visited than coastal Alicante spots.",src:"Spanish travel blogs",sc:"st-unv",rel:"★★ Few sources"}],
+nearby:"Río Girona · Pedreguer · Dénia",url:"https://www.comunitatvalenciana.com/es/inspirate/cuevas-comunitat-valenciana",videos:[]},
+
+{id:11,name:"Cueva de Don Juan",town:"Jalance",prov:"Valencia",km:88,lat:39.197,lng:-1.098,access:"tourist",kind:"cave",
+highlight:"Mesolithic tools 8,000–10,000 BC · Júcar Canyon views · only natural tourist cave in Valencia province",
+desc:"Rich stalactite cave beside the Júcar Canyon. Archaeological finds: Mesolithic hunting tools and fauna remains 8,000–10,000 BC. ~600m visitor path through dense speleothem formations. Canyon viewpoints before you enter. One of the 5 key tourist caves in the Valencian Community.",
+epic:7,danger:1,size:4,wet:1,
+duration:"~30 min guided",temp:"14–16°C",depth:"~30m",length:"~600m",
+price:"~€5–7",hours:"Check Jalance tourism — seasonal variations",
+season:[1,1,1,1,1,2,2,2,1,1,1,1],photo:"",
+entrances:[{lat:39.197,lng:-1.098,name:"Tourist entrance"}],
+operators:[{name:"Jalance Tourism",acts:["Guided cave tour"],price:"~€5–7",url:"https://www.turismodejalance.com"}],
+air:{notes:"Well-ventilated show cave."},
+risks:[],permit_info:"",
+community:[{t:"Quieter than Sant Josep — often get the guide almost to yourself outside summer.",src:"Spanish travel blogs",sc:"st-unv",rel:"★★ Few sources"}],
+nearby:"Júcar Canyon · Cofrentes thermal spa · Embalse de Embarcaderos",
+url:"https://www.turismodejalance.com",videos:[]},
+
+{id:12,name:"Cueva Museo Dragut",town:"Cullera",prov:"Valencia",km:45,lat:39.157,lng:-0.243,access:"tourist",kind:"cave",
+highlight:"Corsair Dragut's 16th-century sea hideout — now a pirate museum inside the cave",
+desc:"Natural sea cave used by the Ottoman corsair Dragut (Turgut Reis) in the 16th century as a lookout and hiding point. Now a small museum about Dragut and Mediterranean piracy. Unusual and very family-friendly. Easy access from Cullera beach.",
+epic:5,danger:1,size:1,wet:1,
+duration:"~30 min",temp:"~18°C",depth:"Sea level",length:"~50m",
+price:"~€3–5",hours:"Cullera tourism — seasonal",
+season:[1,1,1,1,1,1,1,1,1,1,1,1],photo:"",
+entrances:[{lat:39.157,lng:-0.243,name:"Museum entrance"}],
+operators:[],air:{notes:"Open sea cave — ambient air."},risks:[],permit_info:"",
+community:[{t:"Nice add-on if visiting Cullera beach. Not worth a special trip from Valencia but a pleasant 30-min stop.",src:"Valenciabonita 2024",sc:"st-unv",rel:"★★★ Published article"}],
+nearby:"Cullera beach · Cullera castle · Albufera Natural Park",
+url:"https://www.valenciabonita.es/2024/06/12/cuevas-en-valencia/",videos:[]},
+
+{id:13,name:"Cueva del Sumidor (Túnel del Sumidor)",town:"Vallada",prov:"Valencia",km:76,lat:38.904,lng:-0.655,access:"permit",kind:"cave",
+highlight:"Deepest gypsum cave on Earth — 205m depth, guided beginner trips available, 2025 rescue",
+desc:"World's deepest natural cavity in gypsum rock, formed by sulphuric acid speleogenesis. Active water course throughout. Commercially offered as guided beginner activity (from age 8–10) by adventure companies. However, a 2025 rescue of 4 experienced speleologists shows the real hazards of independent entry.",
+epic:10,danger:7,size:8,wet:5,
+duration:"4–5 hrs guided",temp:"~12°C",depth:"205m (full system)",length:"1,300m",
+price:"~€40–60 with guide",hours:"No fixed hours — book with guide company",
+season:[1,1,1,2,1,1,1,1,1,1,1,1],
+photo:"",
+entrances:[{lat:38.904,lng:-0.655,name:"Main entrance — Vallada barranco"},{lat:38.906,lng:-0.653,name:"Secondary downstream exit"}],
+operators:[
+  {name:"Tronkos y Barrancos",acts:["Guided aquatic cave — 4 hrs","Wetsuit + helmet + guide included","Beginner accessible (Level 1)"],price:"~€45–55/person",url:"https://tronkosybarrancos.com"},
+  {name:"Serranía Aventura",acts:["Guided aquatic caving","River traverse — 600m+"],price:"~€40–60",url:"https://serraniaaventura.com/inicio/espeleologia/"},
+  {name:"Everent",acts:["Group aquatic cave tour"],price:"~€50",url:"https://everent.es"}
+],
+air:{notes:"Active water cave — generally well-ventilated by underground flow. Flash flooding can create rapid pressure changes. No CO2 incidents recorded on commercial sections. Deep system sections beyond tourist areas have poor air circulation."},
+risks:["April 2025: 4 speleologists blocked inside — full emergency rescue required","Active water course — flash flood risk after ANY rain upstream","Gypsum instability — different from limestone","Hypothermia risk in water sections","Never enter independently without expert SRT for deep sections"],
+permit_info:"Commercial guided activity: book with guide companies — no permit needed, company handles it. Independent technical exploration: FECV permit at espeleocv.org.es",
+community:[
+  {t:"April 2025: 4 experienced speleologists blocked inside, requiring bomberos + mountain rescue extraction. Water rose unexpectedly.",src:"Descendedor.blogspot / caving news April 2025",sc:"st-resc",rel:"★★★★★ Documented rescue incident"},
+  {t:"As commercial guided activity it's marketed as Level 1 and 'very fun' — accurate if with quality guide AND conditions are dry. Cancel if rain is forecast or has fallen in past 24 hrs.",src:"Everent / Tronkos operator pages",sc:"st-off",rel:"★★★★ Multiple operators"}
+],
+nearby:"Vallada village · Moixent Iberian site",
+url:"https://everent.es/actividades/espeleologia-cueva-acuatica-sumidero-vallada-valencia/",
+videos:[{title:"Túnel del Sumidor — guided tour inside",url:"https://www.youtube.com/results?search_query=Tunel+del+Sumidor+Vallada+espeleologia"}]},
+
+{id:14,name:"Sima del Campillo",town:"Tous",prov:"Valencia",km:68,lat:39.052,lng:-0.735,access:"permit",kind:"cave",
+highlight:"Largest single chamber in the Valencian Community — 8,500m² floor, open Mar 16–Oct 15 only",
+desc:"Main room: 8,500m² floor area and ~300,000m³ volume — like a concert hall underground. FECV regulated with strict seasonal access. Access only 16 March – 15 October.",
+epic:8,danger:6,size:10,wet:2,
+duration:"Half day",temp:"~13°C",depth:"~60m",length:"~600m",
+price:"Free (FECV permit)",hours:"ONLY accessible 16 March – 15 October.",
+season:[3,3,1,1,1,1,1,1,1,1,3,3],photo:"",
+entrances:[{lat:39.052,lng:-0.735,name:"Main sima entrance"}],
+operators:[{name:"FECV affiliated clubs (CelaOntinyent)",acts:["Guided club visits","Technical caving"],price:"Club fees",url:"https://celaontinyent.es/avenc-sima-del-campillo/"}],
+air:{notes:"Large chamber with good natural air circulation. No air quality incidents documented. Standard cave atmosphere — slightly elevated CO2 vs surface, normal for enclosed spaces."},
+risks:["Significant descent to reach main chamber","Large loose rock on ceiling","Remote — rescue access difficult"],
+permit_info:"FECV formulario at espeleocv.org.es. Access 16 March – 15 October only. Provide: names, federation credentials, equipment list, planned dates.",
+community:[{t:"The scale of the Campillo chamber is genuinely disorienting — you don't understand the size from outside. Referenced in club reports as a benchmark site.",src:"CelaOntinyent club reports",sc:"st-forum",rel:"★★★ Club publications"}],
+nearby:"Tous reservoir · Cuevas del Candil y Tornero nearby",
+url:"https://celaontinyent.es/avenc-sima-del-campillo/",videos:[]},
+
+{id:15,name:"Cuevas del Candil y Tornero",town:"Tous",prov:"Valencia",km:68,lat:39.057,lng:-0.727,access:"free",kind:"cave",
+highlight:"Best guided beginner caving near Valencia — two contrasting caves, crawl-throughs and formations",
+desc:"Two caves side by side. Cueva del Tornero: dynamic, tight crawl-throughs, varied manoeuvres including abseiling, counterbalancing, squeezes. Cueva del Candil: wide passages, spectacular formations, enormous natural corridors. Best intro to caving in the Valencia region.",
+epic:7,danger:2,size:4,wet:2,
+duration:"4–5 hrs for both",temp:"~15°C each",depth:"~30m each",length:"Candil ~300m · Tornero ~200m",
+price:"Free site / guided activity ~€40–50",hours:"Book with guide company — year-round",
+season:[1,1,1,1,1,2,2,1,1,1,1,1],photo:"",
+entrances:[{lat:39.057,lng:-0.727,name:"Tornero entrance"},{lat:39.056,lng:-0.728,name:"Candil entrance"}],
+operators:[
+  {name:"Oteka Aventura",acts:["Guided double cave tour — 4–5 hrs","Full kit: helmet, harness, ropes, neopreno","Abseil, counterbalancing, crawl-throughs"],price:"~€45–50/person",url:"https://otekaaventura.es"},
+  {name:"Tronkos y Barrancos",acts:["Guided cave tour"],price:"~€40–50",url:"https://tronkosybarrancos.com"}
+],
+air:{notes:"Well-ventilated caves in active karst. No air quality concerns on any sections open to guided visits."},
+risks:["Crawl-throughs in Tornero — tight sections","Slippery surfaces","Not for claustrophobics"],
+permit_info:"",
+community:[{t:"Best intro caving experience near Valencia. Oteka Aventura guides are knowledgeable. Tornero is genuinely tight — skip if you have even mild claustrophobia.",src:"Oteka Aventura reviews",sc:"st-unv",rel:"★★★ Operator page + reviews"}],
+nearby:"Tous reservoir · Sima del Campillo nearby",
+url:"https://otekaaventura.es",videos:[]},
+
+{id:16,name:"Cueva de las Maravillas",town:"Dos Aguas",prov:"Valencia",km:50,lat:39.358,lng:-0.722,access:"permit",kind:"cave",
+highlight:"Commercial guided cave near Valencia with abseil — beginner-accessible speleology",
+desc:"Visually spectacular cave offered commercially by Ruting.es and other operators. Includes a small abseil section. Family-accessible. Low physical demand. One of the most-booked guided cave experiences in Valencia province. The name 'Maravillas' (Wonders) reflects the formations quality.",
+epic:7,danger:2,size:4,wet:2,
+duration:"Half day (morning or afternoon)",temp:"~14°C",depth:"~30m",length:"~300m",
+price:"~€30–40 guided",hours:"Morning or afternoon slots — book in advance",
+season:[1,1,1,1,1,1,1,1,1,1,1,1],photo:"",
+entrances:[{lat:39.358,lng:-0.722,name:"Cave entrance"}],
+operators:[
+  {name:"Ruting.es (Venta del Moro)",acts:["Guided caving with abseil","Kit: helmet, mono, harness, headlamp, ropes","Family-friendly from age 8+"],price:"~€30–40/person",url:"https://www.ruting.es/espeleologia-valencia/"}
+],
+air:{notes:"Good ventilation. No air quality incidents reported on commercial sections."},
+risks:["Small abseil section — not suitable for severe vertigo"],
+permit_info:"Book with guide company — no independent access.",
+community:[{t:"The cave lives up to its name — formations are genuinely impressive. Ruting guides are professional and equipment is provided.",src:"Ruting.es operator reviews",sc:"st-unv",rel:"★★★ Operator page"}],
+nearby:"Dos Aguas village · Tous reservoir",
+url:"https://www.ruting.es/espeleologia-valencia/",videos:[]},
+
+{id:17,name:"Montanejos Cave (Espeleología)",town:"Montanejos",prov:"Castellón",km:100,lat:40.061,lng:-0.584,access:"free",kind:"cave",
+highlight:"Nomada Aventura guided cave near Montanejos hot springs — aquatic and vertical options",
+desc:"Cave system near Montanejos in the Alto Mijares canyon, used by multiple adventure companies for guided speleology. Two levels: Iniciación (beginner, aquatic, 1hr from Valencia) and Nivel Dos (vertical sima with ropes). The town of Montanejos also has famous thermal river hot springs — excellent combined day trip.",
+epic:7,danger:4,size:5,wet:4,
+duration:"Half day",temp:"~13°C",depth:"Unknown (commercial sections ~30m)",length:"Commercial route ~300m",
+price:"~€35–50 guided",hours:"Book with guide company",
+season:[1,1,1,1,1,1,1,1,1,1,1,1],photo:"",
+entrances:[{lat:40.061,lng:-0.584,name:"Cave access point"}],
+operators:[
+  {name:"Nomada Aventura",acts:["Espeleología Iniciación (aquatic, Level 1)","Espeleología Nivel Dos (vertical, sima)","Full kit provided"],price:"~€35–50",url:"https://nomadaaventura.com"},
+  {name:"Serranía Aventura",acts:["Aquatic caving","River cave traverse"],price:"~€40–55",url:"https://serraniaaventura.com"}
+],
+air:{notes:"Active karst cave — well-ventilated by water flow in aquatic sections."},
+risks:["Vertical sections require rope technique (Nivel Dos)","Aquatic sections — wetsuit required","Flash flood risk in water sections — avoid after rain"],
+permit_info:"Book with guide company — all equipment provided.",
+community:[{t:"Combine with the famous Montanejos hot springs (Fuente de los Baños) for a perfect day. The thermal river is 25°C year-round.",src:"Nomada Aventura operator",sc:"st-off",rel:"★★★★ Well-established operator"}],
+nearby:"Montanejos hot springs · Penyagolosa Natural Park · Cañón de Montanejos",
+url:"https://nomadaaventura.com",videos:[]},
+
+{id:18,name:"Cova de la Sarsa",town:"Bocairent",prov:"Valencia",km:73,lat:38.772,lng:-0.598,access:"permit",kind:"arch",
+highlight:"Richest Neolithic pottery deposit in Eastern Spain — 6th millennium BC",
+desc:"One of the most important Neolithic caves in the western Mediterranean. Cardial pottery, bone tools, ornaments, and human remains from 5th–6th millennium BC. 716m long, 43m depth. Inside Sierra de Mariola. Also offered commercially as dry caving by guide companies.",
+epic:8,danger:4,size:6,wet:1,
+duration:"~4 hrs with guide",temp:"~14°C",depth:"43m",length:"716m",
+price:"~€35–40 guided / Free with permit",hours:"Bat restrictions Feb–Aug — heavily limited",
+season:[2,3,3,3,3,3,3,3,1,1,1,2],photo:"",
+entrances:[{lat:38.772,lng:-0.598,name:"Main entrance"}],
+operators:[
+  {name:"Tramuntana Aventura",acts:["Dry caving — beginner, 4 hrs","Kit provided: helmet, light, mono"],price:"~€35–40",url:"https://www.tramuntanaaventura.es/en/dry-caving-cova-de-la-sarsa-bocairent-valencia/"},
+  {name:"Marinalia (aquatic option)",acts:["Water speleology variant"],price:"~€40",url:"https://marinalia.es"}
+],
+air:{notes:"Well-ventilated cave with good airflow. Protected Rhinolophus bat colonies — disturbance of colony is a criminal offence under bat protection laws."},
+risks:["Technical descents — ropes required for deep sections","Protected bat colony (Rhinolophus sp.) — criminal offence to disturb","Fragile Neolithic stratigraphy — do not touch anything"],
+permit_info:"Commercial guided: book Tramuntana Aventura or similar — no permit needed, company handles it. Independent: Conselleria de Medi Ambient permit (Decreto 65/2006).",
+community:[{t:"As a commercial guided cave it's marketed as 'beginner, technically easy, lots of formations' — accurate for the shallow sections.",src:"Tramuntana Aventura operator",sc:"st-off",rel:"★★★★ Established operator"}],
+nearby:"Sierra de Mariola · Bocairent medieval village",
+url:"https://www.tramuntanaaventura.es/en/dry-caving-cova-de-la-sarsa-bocairent-valencia/",videos:[]},
+
+{id:19,name:"Coves de Parpalló",town:"Gandia",prov:"Valencia",km:65,lat:38.91,lng:-0.188,access:"permit",kind:"arch",
+highlight:"5,000+ Palaeolithic engraved tablets — world's largest collection of portable prehistoric art",
+desc:"Among the most significant Palaeolithic sites in Europe. 5,000+ engraved limestone tablets with animal figures (largest collection of Palaeolithic portable art on Earth) found 1929–31. Physical access restricted to researchers. The tablets are in the Museu de Prehistòria de Valencia — visit there without a permit.",
+epic:8,danger:2,size:3,wet:1,
+duration:"Research only",temp:"~14°C",depth:"~30m",length:"~250m",
+price:"N/A (research only). Museum: free–€2",hours:"No public access. Museum: check museuprehistoriavalencia.es",
+season:[2,2,2,2,2,2,2,2,2,2,2,2],photo:"",
+entrances:[{lat:38.91,lng:-0.188,name:"Cave entrance (restricted)"}],
+operators:[],
+air:{notes:"Research access only. Atmospheric conditions monitored as part of preservation protocol."},
+risks:["Criminal offence to access without permit","Cliff terrain — fall risk","Protected archaeological stratigraphy"],
+permit_info:"Contact Museu de Prehistòria de Valencia — Carrer de la Corona 36, Tel: 963 883 599. Academic credentials required.",
+community:[],
+nearby:"Museu de Prehistòria Valencia (see the tablets) · Gandia beach",
+url:"https://www.museuprehistoriavalencia.es",videos:[]},
+
+{id:20,name:"Cova Negra de Xàtiva",town:"Xàtiva",prov:"Valencia",km:60,lat:38.985,lng:-0.516,access:"permit",kind:"arch",
+highlight:"Neanderthal teeth and bones — occupied 100,000 to 30,000 BC",
+desc:"One of the most significant Palaeolithic sites in Spain. Neanderthal remains including teeth and bones, Mousterian tools, from excavations since the 1940s. Active archaeological zone. Cave mouth visible from road but fenced.",
+epic:7,danger:1,size:2,wet:1,
+duration:"Research only",temp:"~14°C",depth:"Horizontal",length:"~80m",
+price:"N/A",hours:"Fenced — no public access",
+season:[2,2,2,2,2,2,2,2,2,2,2,2],photo:"",
+entrances:[{lat:38.985,lng:-0.516,name:"Fenced cave entrance"}],
+operators:[],air:{notes:"Archaeological zone — not accessed by public."},
+risks:["Criminal offence to breach fencing","Cliff terrain"],
+permit_info:"Research: Conselleria de Cultura / Museu de Prehistòria Valencia. Museu Municipal de Xàtiva displays some finds.",
+community:[],
+nearby:"Xàtiva castle · Xàtiva old town",url:"https://www.xativa.es",videos:[]},
+
+{id:21,name:"Cov del Bolomor",town:"Tavernes de la Valldigna",prov:"Valencia",km:60,lat:38.957,lng:-0.268,access:"permit",kind:"arch",
+highlight:"Oldest evidence of fire use in Europe — 200,000–100,000 BC",
+desc:"Evidence of fire use dated ~200,000 BC — among the oldest in Europe. Active excavation site managed by Museu de Prehistòria de Valencia. Not a tourist cave. Fauna remains and lithic tools spanning 100,000 years of occupation.",
+epic:7,danger:1,size:2,wet:1,
+duration:"Research only",temp:"~15°C",depth:"N/A (horizontal cliff cave)",length:"~100m",
+price:"N/A",hours:"Research only",
+season:[2,2,2,2,2,2,2,2,2,2,2,2],photo:"",
+entrances:[{lat:38.957,lng:-0.268,name:"Excavation entrance"}],
+operators:[],air:{notes:"Open cliff cave — ambient air."},
+risks:["Criminal offence to enter without permit","Fragile stratigraphy"],
+permit_info:"Contact Museu de Prehistòria de Valencia.",
+community:[],
+nearby:"Tavernes de la Valldigna beach · Simat monastery",url:"https://www.museuprehistoriavalencia.es",videos:[]},
+
+{id:22,name:"Cueva de la Sima de Millares",town:"Millares",prov:"Valencia",km:55,lat:39.22,lng:-0.89,access:"permit",kind:"cave",
+highlight:"Key from Albergue Municipal — unusual semi-open system, Decreto 65/2006",
+desc:"Protected under Decreto 65/2006 but with semi-open access — collect key from Albergue Municipal de Millares. Free of charge. No formal guide needed but speleological experience recommended.",
+epic:6,danger:3,size:5,wet:2,
+duration:"1–2 hrs",temp:"~14°C",depth:"~50m",length:"~400m",
+price:"Free (key collection required)",hours:"Call ahead: 96 251 90 78 or 619 841 197",
+season:[1,1,1,1,1,1,1,1,1,1,1,1],photo:"",
+entrances:[{lat:39.22,lng:-0.89,name:"Main entrance"}],
+operators:[],
+air:{notes:"Good ventilation in main sections. No air quality incidents documented. Deeper unexplored sections may have poor air — do not go off-route."},
+risks:["Completely unlit — headlamp failure = total darkness","Uneven terrain","Formations fragile — do not touch"],
+permit_info:"Call Albergue Municipal de Millares (96 251 90 78 or 619 841 197) — free key. Spanish required.",
+community:[],
+nearby:"Millares gorge · Bicorp cave art",url:"https://www.millares.es",videos:[]},
+
+{id:23,name:"Cova Gran de Serra (Soterranya)",town:"Serra",prov:"Valencia",km:28,lat:39.71,lng:-0.42,access:"closed",kind:"cave",
+highlight:"1,810m — home to Microtyphllus Infernalis blind beetle found ONLY here. Bat colony protected.",
+desc:"Largest cave in Serra Calderona NP and second largest in the Valencian Community. Home to endangered bat species and Microtyphllus Infernalis — a blind beetle endemic to this single cave system. Commercially offered by Serratotnatura outside bat breeding season (~Sep–Jan).",
+epic:8,danger:5,size:9,wet:2,
+duration:"~2 hrs guided (when open)",temp:"~14°C",depth:"100m",length:"1,810m",
+price:"~€30–40 guided",hours:"Closed approx Feb–Aug (bat breeding). Check serratotnatura.com",
+season:[3,3,3,3,3,3,3,3,1,1,1,3],photo:"",
+entrances:[{lat:39.71,lng:-0.42,name:"Main entrance"}],
+operators:[{name:"Serratotnatura",acts:["Guided speleology intro","Serra Calderona cave network"],price:"~€30–40",url:"https://www.serratotnatura.com/turisme-actiu/espeleologia/"}],
+air:{notes:"Well-ventilated through large cave system. Bat colony disturbance risks — presence of thousands of bats affects local air quality and CO2 in deep sections during breeding season. This is the primary reason for closure."},
+risks:["Bat colony disturbance = criminal offence — fines €10,000–€100,000","Technical sections in deeper cave","ZEC protected zone (Decreto 36/2013)"],
+permit_info:"Commercial guided access via Serratotnatura.com during non-bat season. Research: Conselleria de Medi Ambient.",
+community:[{t:"Serratotnatura know which sections are open at any given time. Always call before heading up — seasonal access changes annually.",src:"Serratotnatura operator",sc:"st-off",rel:"★★★★ Local operators"}],
+nearby:"Serra Calderona Natural Park · Portaceli monastery",
+url:"https://www.serratotnatura.com/turisme-actiu/espeleologia/",videos:[]},
+
+{id:24,name:"Sima de l'Àguila",town:"Picassent",prov:"Valencia",km:20,lat:39.352,lng:-0.487,access:"permit",kind:"cave",
+highlight:"FECV regulated vertical shaft — only 20km from Valencia city centre",
+desc:"One of the closest regulated vertical shaft caves to Valencia city. Listed in the FECV catalogue under Decreto 65/2006. Bat colony presence likely given regulated status. The Cova dels Moneders is nearby — these two are often visited together by local clubs.",
+epic:5,danger:6,size:3,wet:1,
+duration:"~2 hrs technical",temp:"~15°C",depth:"~40m",length:"~200m",
+price:"Free (FECV permit)",hours:"Seasonal bat restrictions — check FECV",
+season:[1,1,2,2,2,2,2,2,1,1,1,1],photo:"",
+entrances:[{lat:39.352,lng:-0.487,name:"Sima entrance"}],
+operators:[],
+air:{notes:"Bat colony likely — CO2 and methane can accumulate in deep sections especially during bat breeding season. Do not enter without ventilation check."},
+risks:["Vertical descent — SRT required","Bat colony disturbance = criminal offence","Regulated zone — heavy fines"],
+permit_info:"FECV: espeleocv.org.es/cavidades-reguladas/. Reference Decreto 65/2006.",
+community:[{t:"Closest serious vertical cave to Valencia centre — used by local speleology clubs for training. Cova dels Moneders nearby is accessible on foot from same area.",src:"Valenciabonita 2024",sc:"st-unv",rel:"★★★ Published article"}],
+nearby:"Picassent · Cova dels Moneders nearby",
+url:"https://espeleocv.org.es/cavidades-reguladas/",videos:[]},
+
+{id:25,name:"Cova dels Moneders",town:"Picassent",prov:"Valencia",km:20,lat:39.355,lng:-0.485,access:"free",kind:"cave",
+highlight:"Free accessible cave near Valencia — short hike from Picassent",
+desc:"Natural cave accessible by a short hike near Picassent. One of the closest non-regulated caves to Valencia. Popular for day trips and gentle intro to cave exploration. Often combined with the Sima de l'Àguila nearby.",
+epic:4,danger:2,size:2,wet:1,
+duration:"~1 hr",temp:"~15°C",depth:"~15m",length:"~100m",
+price:"Free",hours:"Natural site — always open",
+season:[1,1,1,1,1,1,1,1,1,1,1,1],photo:"",
+entrances:[{lat:39.355,lng:-0.485,name:"Cave entrance"}],
+operators:[],air:{notes:"Well-ventilated. No issues."},risks:["Unlit — bring headlamp"],permit_info:"",
+community:[{t:"Easy accessible cave for a Valencia day trip. Bring a torch, proper shoes. Not spectacular but good first exposure to natural caves.",src:"Valenciabonita 2024",sc:"st-unv",rel:"★★★ Published article"}],
+nearby:"Picassent · Sima de l'Àguila",url:"https://www.valenciabonita.es/2024/06/12/cuevas-en-valencia/",videos:[]},
+
+{id:26,name:"Cova de la Galera",town:"Favara",prov:"Valencia",km:55,lat:39.078,lng:-0.408,access:"free",kind:"cave",
+highlight:"Spectacular natural cave arch — PR-CV 304 hiking route passes through",
+desc:"Impressive natural cave arch and cave system accessed via the PR-CV 304 trail near Favara. Described as 'the spectacular natural cave of Favara' in regional hiking literature. Part of the 'Ouet and Cova de la Galera' route. Free, natural, well-documented hiking destination.",
+epic:7,danger:2,size:4,wet:1,
+duration:"~2–3 hrs round trip",temp:"Outdoor / ambient",depth:"~25m",length:"~80m",
+price:"Free",hours:"Natural site — always open",
+season:[1,1,1,1,1,2,2,2,1,1,1,1],photo:"",
+entrances:[{lat:39.078,lng:-0.408,name:"Cave arch entrance (PR-CV 304)"}],
+operators:[],air:{notes:"Natural cave arch — ambient air, excellent ventilation."},
+risks:["Steep path sections","Rocky terrain"],
+permit_info:"",
+community:[{t:"One of the most beautiful natural rock arches in Valencia province. The PR-CV 304 route is well-marked. Spectacular photos.",src:"Valenciabonita 2024",sc:"st-unv",rel:"★★★ Published article with photos"}],
+nearby:"Favara village · L'Ouet valley",url:"https://www.valenciabonita.es/2024/06/12/cuevas-en-valencia/",videos:[]},
+
+{id:27,name:"Cova Bernarda",town:"Palma de Gandia",prov:"Valencia",km:70,lat:38.937,lng:-0.197,access:"free",kind:"arch",
+highlight:"Prehistoric occupation cave — witness to the first settlers of Palma de Gandia",
+desc:"Natural cave with evidence of prehistoric human habitation near Palma de Gandia. A natural wonder that was home to the earliest settlers of the area. Accessible by hiking trail. Free natural heritage site.",
+epic:5,danger:2,size:2,wet:1,
+duration:"~1–2 hrs round trip",temp:"~15°C",depth:"~20m",length:"~60m",
+price:"Free",hours:"Natural site",
+season:[1,1,1,1,1,2,2,2,1,1,1,1],photo:"",
+entrances:[{lat:38.937,lng:-0.197,name:"Cave entrance"}],
+operators:[],air:{notes:"Well-ventilated. No issues."},risks:["Rocky hiking trail"],permit_info:"",community:[],
+nearby:"Palma de Gandia · Gandia beach",url:"https://www.valenciabonita.es/2024/06/12/cuevas-en-valencia/",videos:[]},
+
+{id:28,name:"Cova de les Cent Ungles & Cova dels Canalons",town:"Xeresa",prov:"Valencia",km:65,lat:38.96,lng:-0.16,access:"free",kind:"cave",
+highlight:"Two accessible caves near Gandia — free hiking destination",
+desc:"Two natural cavities accessible on foot near Xeresa. Described as 'visitables' in regional literature. Part of the network of accessible natural caves in the Gandia area. Free, non-regulated, relatively easy terrain.",
+epic:4,danger:2,size:2,wet:1,
+duration:"~2 hrs for both",temp:"~15°C",depth:"~20m each",length:"~100m combined",
+price:"Free",hours:"Natural site",
+season:[1,1,1,1,1,2,2,2,1,1,1,1],photo:"",
+entrances:[{lat:38.96,lng:-0.16,name:"Cent Ungles entrance"},{lat:38.959,lng:-0.162,name:"Canalons entrance"}],
+operators:[],air:{notes:"Well-ventilated natural caves."},risks:["Rocky terrain","Bring headlamp"],permit_info:"",community:[],
+nearby:"Xeresa village · Gandia beach · Cova del Bolomor",url:"https://www.valenciabonita.es/2024/06/12/cuevas-en-valencia/",videos:[]},
+
+{id:29,name:"Coves del Barranc de l'Infern",town:"Vall de Laguar",prov:"Alicante",km:90,lat:38.767,lng:0.017,access:"free",kind:"cave",
+highlight:"Multiple cave openings along 'Hell's Ravine' — one of the best gorge hikes in the region",
+desc:"Multiple natural cave openings along the spectacular Barranc de l'Infern (Hell's Ravine) limestone cliff faces. 12km circular route from Fleix hamlet, 400m elevation gain. Caves are natural shelters used by shepherds. Gorge itself is the main attraction — caves are a bonus.",
+epic:8,danger:3,size:3,wet:1,
+duration:"5–6 hrs full route",temp:"Outdoor / ambient",depth:"Shallow",length:"Multiple openings",
+price:"Free",hours:"Natural site — always open. Start early in summer.",
+season:[2,2,1,1,1,2,2,2,1,1,1,2],photo:"",
+entrances:[{lat:38.767,lng:0.017,name:"Fleix hamlet trailhead"}],
+operators:[],air:{notes:"Open gorge — ambient air."},
+risks:["Flash flood risk in gorge in heavy rain","Rocky uneven trail","No rescue access into deepest sections"],
+permit_info:"",
+community:[{t:"One of the most beautiful hikes in the Valencian Community. Go in spring for green vegetation and water flow. Take route clockwise from Fleix for best early views.",src:"Wikiloc community",sc:"st-wiki",rel:"★★★★ Many GPS tracks with notes"}],
+nearby:"Vall de Laguar village · Xàbia coast · Fonts de l'Algar",
+url:"https://www.valldlaguar.com",videos:[]},
+
+{id:30,name:"Cova del Somo",town:"Castell de Castells",prov:"Alicante",km:100,lat:38.707,lng:-0.192,access:"free",kind:"cave",
+highlight:"Guided speleology activity near Fonts de l'Algar — beginner aquatic cave",
+desc:"Cave offered commercially near Castell de Castells by Alicante guide companies (Marinalia etc.) as an aquatic speleology activity. Combines well with the nearby Fonts de l'Algar waterfall park. Beginner-accessible.",
+epic:6,danger:3,size:3,wet:4,
+duration:"~5–6 hrs activity",temp:"~12°C",depth:"~40m",length:"~300m",
+price:"~€40–55 guided",hours:"Book with guide company",
+season:[1,1,1,1,1,1,1,1,1,1,1,1],photo:"",
+entrances:[{lat:38.707,lng:-0.192,name:"Cave entrance"}],
+operators:[{name:"Marinalia (Alicante)",acts:["Water speleology Cova del Somo","Kit: wetsuit, helmet, harness"],price:"~€40–55",url:"https://marinalia.es/deporte-y-aventura/multiaventura/392-espeleologia-en-alicante.html"}],
+air:{notes:"Aquatic cave — well-ventilated by water flow."},risks:["Aquatic sections — wetsuit required","Cold water"],permit_info:"Book with guide company.",
+community:[{t:"Combine with Fonts de l'Algar for a great full day in the Alicante mountains.",src:"Marinalia operator reviews",sc:"st-unv",rel:"★★★ Operator page"}],
+nearby:"Fonts de l'Algar · Callosa d'en Sarrià · Guadalest",
+url:"https://marinalia.es/deporte-y-aventura/multiaventura/392-espeleologia-en-alicante.html",videos:[]},
+
+{id:31,name:"Avenc Pilar",town:"Barx",prov:"Valencia",km:65,lat:38.988,lng:-0.317,access:"closed",kind:"cave",
+highlight:"235m vertical shaft — deepest accessible natural cavity in Valencia, expert only",
+desc:"The deepest accessible natural cavity in the Valencian Community by vertical drop. An avenc (vertical shaft) not open to the public. No tourist access. No permit system — simply extremely dangerous for anyone without professional caving certification.",
+epic:9,danger:10,size:7,wet:2,
+duration:"Full technical day",temp:"~10°C",depth:"235m vertical",length:"~300m",
+price:"Expert only",hours:"No formal access system — FECV registration recommended",
+season:[2,2,2,1,1,1,1,1,1,1,2,2],photo:"",
+entrances:[{lat:38.988,lng:-0.317,name:"Avenc entry point"}],
+operators:[],
+air:{notes:"No documented air quality incidents. 235m vertical — main risk is fall, not atmosphere. Ventilation generally good in open shaft systems."},
+risks:["235m free vertical — instantly fatal error","Rockfall from upper shaft onto lower descenders","Cold and damp — hypothermia risk","Remote — rescue 3–5 hours","No mobile signal","Min 80m ropes required"],
+permit_info:"No formal permit but FECV registration strongly recommended. Notify 112 before entry with planned return time.",
+community:[],
+nearby:"Barx village · Fonts de l'Algar · Xàtiva castle",
+url:"https://espeleocv.org.es",videos:[]},
+
+{id:32,name:"Sima Posos",town:"Azuébar",prov:"Castellón",km:80,lat:39.784,lng:-0.421,access:"permit",kind:"cave",
+highlight:"80m depth · 3,000m+ explored — significant vertical cave in Serra d'Espadà",
+desc:"One of the more significant cave systems in Serra d'Espadà with over 3,000m of explored passages and 80m vertical drop. Documented in Wikiloc caving community with GPS tracks. Located near Azuébar in the natural park.",
+epic:8,danger:7,size:8,wet:2,
+duration:"Full technical day",temp:"~13°C",depth:"80m",length:"3,000m+ explored",
+price:"Free (permit likely required)",hours:"Check FECV seasonal restrictions",
+season:[1,1,1,1,1,1,1,1,1,1,1,1],photo:"",
+entrances:[{lat:39.784,lng:-0.421,name:"Main sima entrance"}],
+operators:[],
+air:{notes:"Documented in speleological literature as having good airflow through the large passage network."},
+risks:["Vertical descent 80m — SRT required","Complex route — navigation experience needed","Remote location — rescue access difficult"],
+permit_info:"Check FECV catalogue. Serra d'Espadà Natural Park zone — may require environmental permit.",
+community:[{t:"Documented by multiple caving club expeditions. One of the larger explored cave systems in Castellón province.",src:"Wikiloc caving community",sc:"st-wiki",rel:"★★★ Multiple GPS tracks"}],
+nearby:"Azuébar village · Serra d'Espadà Natural Park · Coves de Sant Josep nearby",
+url:"https://espeleocv.org.es/cavidades-reguladas/",videos:[]},
+
+{id:33,name:"Mina Virgen del Amparo",town:"Artana",prov:"Castellón",km:55,lat:39.869,lng:-0.276,access:"closed",kind:"mine",
+highlight:"Abandoned 18th–19th century lead/silver mine — structural collapse risk, DO NOT ENTER",
+desc:"Former lead and silver mine worked 18th–19th century in Serra d'Espadà foothills. Now completely abandoned with documented roof collapses. Bat colonies roost in deeper sections. View from outside only.",
+epic:3,danger:9,size:3,wet:2,
+duration:"N/A — do not enter",temp:"Variable / damp",depth:"Unknown",length:"Unknown",
+price:"N/A",hours:"N/A",
+season:[3,3,3,3,3,3,3,3,3,3,3,3],photo:"",
+entrances:[{lat:39.869,lng:-0.276,name:"Mine entrance (exterior view only)"}],
+operators:[],
+air:{notes:"SERIOUS AIR QUALITY RISK — abandoned mine with no ventilation. CO2 and methane documented in dead-end sections. CO2 can reach lethal levels (>10%) without warning. Methane (CH4) is explosive and odourless. No measurement data available as no official inspection has been conducted. Bat colonies add to CO2 load. DO NOT ENTER."},
+risks:["Roof collapse — documented structural failures","Rotted timber pit props — can fail without warning","CO2 buildup can reach lethal levels — NO WARNING","Methane (explosive) possible in sealed sections","No lighting","Bat disturbance = criminal offence","Rescue hours away"],
+permit_info:"No entry permitted. Ley 22/1973 de Minas — full personal liability for accidents.",
+community:[],
+nearby:"Serra d'Espadà Natural Park · Artana castle · Coves de Sant Josep",
+url:"https://activo.comunitatvalenciana.com",videos:[]},
+
+{id:34,name:"Mines de Ferro de Serra Calderona",town:"Serra / Marines",prov:"Valencia",km:35,lat:39.68,lng:-0.44,access:"closed",kind:"mine",
+highlight:"19th-century iron mine network — multiple roof collapses documented, DO NOT ENTER",
+desc:"Tunnels and shafts from 19th–20th century iron extraction across Serra Calderona hills. Multiple entrance points exist in the landscape. Completely abandoned — zero safety infrastructure. Multiple roof collapses documented. Bat colonies present.",
+epic:2,danger:9,size:4,wet:2,
+duration:"N/A — do not enter",temp:"Variable",depth:"Unknown",length:"Unknown",
+price:"N/A",hours:"N/A",
+season:[3,3,3,3,3,3,3,3,3,3,3,3],photo:"",
+entrances:[{lat:39.68,lng:-0.44,name:"Mine entrance cluster (exterior view only)"}],
+operators:[],
+air:{notes:"SERIOUS AIR QUALITY RISK — sealed mine sections with no ventilation since abandonment. CO2 and methane possible. Bat colonies significantly increase CO2. No official measurements — site has not been inspected due to structural instability. Vertical shafts mean gas pockets can be encountered without warning."},
+risks:["Immediate roof collapse risk — uninspected mines","Vertical shafts hidden under vegetation","CO2 and methane possible in sealed sections","No mobile signal inside","Rescue takes hours and is dangerous for rescuers"],
+permit_info:"No entry. Full personal liability under Ley 22/1973 de Minas.",
+community:[],
+nearby:"Serra Calderona Natural Park · Portaceli monastery",
+url:"https://www.serracalderona.es",videos:[]},
+
+{id:35,name:"Coves de Sant Josep — EspeleoKayak & Origen",town:"La Vall d'Uixó",prov:"Castellón",km:68,lat:39.824,lng:-0.251,access:"tourist",kind:"cave",
+highlight:"2024: new 'Origen' activity opens virgin galleries — kayak + on-foot in unexplored sections",
+desc:"Separate booking from the standard boat tour. Two activities: (1) EspeleoKayak — paddle deeper than the tourist boat goes; (2) 'Origen' (2024 debut) — kayak then on-foot into previously unseen galleries. Requires basic kayaking ability.",
+epic:10,danger:3,size:10,wet:5,
+duration:"2–3 hrs",temp:"20°C constant",depth:"River level",length:"Beyond 2,700m tourist route",
+price:"Check covesdesantjosep.es — separate booking",hours:"Seasonal — check website",
+season:[1,1,1,1,1,1,2,2,1,1,1,1],photo:"",
+entrances:[{lat:39.824,lng:-0.251,name:"Kayak launch point"}],
+operators:[{name:"Coves de Sant Josep (official)",acts:["EspeleoKayak","Origen — virgin gallery exploration (2024)"],price:"~€35–50 per activity",url:"https://turismolavallduixo.com/hacer/turismo-activo/origen-espeleologia-en-coves-de-sant-josep/"}],
+air:{notes:"Active underground river cave — excellent airflow from water movement. CO2 slightly elevated versus surface but well within safe limits on all commercial routes. Deep unexplored extensions: unknown."},
+risks:["Flood closure — cave floods fast after rain","Low ceilings in some kayak sections","Cold water contact"],
+permit_info:"Book at covesdesantjosep.es — separate from standard boat ticket.",
+community:[{t:"The Origen activity (2024 new) is a genuinely special experience — you paddle into sections nobody has ever visited as a tourist before. The silence when you're the only group is extraordinary.",src:"Turismolavallduixo.com 2024 launch coverage",sc:"st-off",rel:"★★★★ Official 2024 launch info"}],
+nearby:"Sant Josep standard tour · Serra d'Espadán Natural Park",
+url:"https://turismolavallduixo.com/hacer/turismo-activo/origen-espeleologia-en-coves-de-sant-josep/",
+videos:[]},
+
+{id:36,name:"Sima Colomera",town:"Bugarra",prov:"Valencia",km:50,lat:39.588,lng:-0.876,access:"permit",kind:"cave",
+highlight:"FECV regulated vertical shaft — Serra Calderona foothills",
+desc:"Vertical shaft (sima) in Bugarra listed in FECV regulated catalogue. Requires FECV permit and technical equipment.",
+epic:5,danger:6,size:3,wet:1,
+duration:"Half day technical",temp:"~13°C",depth:"~60m",length:"~300m",
+price:"Free (FECV permit)",hours:"Check FECV seasonal restrictions",
+season:[1,1,1,1,1,1,1,1,1,1,1,1],photo:"",
+entrances:[{lat:39.588,lng:-0.876,name:"Sima entrance"}],
+operators:[],air:{notes:"Vertical shaft — generally good ventilation."},
+risks:["Vertical descent — SRT required","Remote access"],
+permit_info:"FECV: espeleocv.org.es/cavidades-reguladas/",
+community:[],
+nearby:"Bugarra village · Serra Calderona",url:"https://espeleocv.org.es/cavidades-reguladas/",videos:[]},
+
+{id:37,name:"Túnel de Carcalín",town:"Buñol",prov:"Valencia",km:45,lat:39.408,lng:-0.812,access:"permit",kind:"cave",
+highlight:"FECV regulated cave near Buñol — permit required",
+desc:"Regulated cave near Buñol in the same area as Cueva del Turche. Listed in FECV catalogue under Decreto 65/2006. Bat colony presence likely.",
+epic:5,danger:4,size:4,wet:2,
+duration:"~2 hrs",temp:"~14°C",depth:"~40m",length:"~400m",
+price:"Free (permit required)",hours:"Seasonal restrictions — check FECV",
+season:[1,1,1,1,1,1,1,1,1,1,1,1],photo:"",
+entrances:[{lat:39.408,lng:-0.812,name:"Cave entrance"}],
+operators:[],air:{notes:"Bat colony possible — CO2 can accumulate in breeding season."},
+risks:["Bat colony — criminal offence to disturb","Regulated cave — heavy fines"],
+permit_info:"FECV: espeleocv.org.es/cavidades-reguladas/",
+community:[],
+nearby:"Buñol · Cueva del Turche",url:"https://espeleocv.org.es/cavidades-reguladas/",videos:[]},
+
+{id:38,name:"Cueva del Lago Ayora",town:"Ayora",prov:"Valencia",km:100,lat:39.059,lng:-1.051,access:"permit",kind:"cave",
+highlight:"Underground lake cave — FECV regulated",
+desc:"Cave containing an underground lake near Ayora. Listed in FECV regulated catalogue. Particularly sensitive to bat colony and hydrological protection requirements.",
+epic:6,danger:4,size:4,wet:4,
+duration:"~2 hrs",temp:"~14°C",depth:"~40m",length:"~400m",
+price:"Free (permit required)",hours:"Seasonal restrictions",
+season:[1,1,1,1,1,1,1,1,1,1,1,1],photo:"",
+entrances:[{lat:39.059,lng:-1.051,name:"Cave entrance"}],
+operators:[],air:{notes:"Underground lake cave — humidity and CO2 can be elevated. No specific incident data available."},
+risks:["Underground water — rising water risk","Bat colony conditions may apply"],
+permit_info:"FECV: espeleocv.org.es/cavidades-reguladas/",
+community:[],
+nearby:"Ayora village · Cueva de Don Juan nearby",url:"https://espeleocv.org.es/cavidades-reguladas/",videos:[]},
+
+{id:39,name:"Cova de les Meravelles",town:"Llombai",prov:"Valencia",km:38,lat:39.275,lng:-0.636,access:"permit",kind:"cave",
+highlight:"'Cave of Wonders' — closest FECV regulated cave to Valencia city",
+desc:"One of the closest regulated caves to Valencia city. Listed in FECV catalogue under Decreto 65/2006. Name suggests notable formations. Bat colony likely.",
+epic:5,danger:3,size:3,wet:1,
+duration:"~1–2 hrs",temp:"~15°C",depth:"~30m",length:"~250m",
+price:"Free (permit required)",hours:"Seasonal bat restrictions",
+season:[1,1,2,2,2,2,2,2,1,1,1,1],photo:"",
+entrances:[{lat:39.275,lng:-0.636,name:"Cave entrance"}],
+operators:[],air:{notes:"Bat colony — CO2 elevated during breeding season. Check FECV for current status."},
+risks:["Bat colony — disturbance = criminal offence","Regulated zone"],
+permit_info:"FECV: espeleocv.org.es/cavidades-reguladas/",
+community:[],
+nearby:"Llombai village · L'Alcúdia · Alzira",url:"https://espeleocv.org.es/cavidades-reguladas/",videos:[]},
+
+{id:40,name:"Cuevas de Calaverón",town:"Hoces del Cabriel",prov:"Valencia",km:130,lat:39.432,lng:-1.372,access:"tourist",kind:"cave",
+highlight:"Show cave in Parque Natural Hoces del Cabriel — extended radius, worth the drive",
+desc:"Tourist cave in the Hoces del Cabriel Natural Park area. Referenced in Valencia tourism guides. Slightly beyond the standard radius but included for visitors willing to make the longer drive into the spectacular Cabriel gorge country.",
+epic:6,danger:1,size:4,wet:1,
+duration:"~30 min guided",temp:"~14°C",depth:"~25m",length:"~300m",
+price:"~€5–7",hours:"Check local tourism",
+season:[1,1,1,1,1,1,1,1,1,1,1,1],photo:"",
+entrances:[{lat:39.432,lng:-1.372,name:"Tourist entrance"}],
+operators:[],air:{notes:"Show cave — ventilated."},risks:[],permit_info:"",community:[],
+nearby:"Hoces del Cabriel gorge · Requena wine region nearby",url:"https://www.comunitatvalenciana.com",videos:[]}
 ];
 
-const ACCESS={
-  free:{color:"#16a34a",label:"Free Access",icon:"🟢",badgeClass:"acc-free",barIcon:"✅"},
-  tourist:{color:"#1d4ed8",label:"Tourist (ticket)",icon:"🔵",badgeClass:"acc-tourist",barIcon:"🎫"},
-  permit:{color:"#d97706",label:"Permit Required",icon:"🟡",badgeClass:"acc-permit",barIcon:"📋"},
-  closed:{color:"#dc2626",label:"Closed/Dangerous",icon:"🔴",badgeClass:"acc-closed",barIcon:"⛔"}
-};
-const ACCESS_DESC={
-  free:"No ticket, no booking required. Show up and explore.",
-  tourist:"Buy a ticket at the entrance or online. Guided visits available.",
-  permit:"Written permit or booking from authorities required before visiting.",
-  closed:"No public access. Do not attempt entry."
-};
+const ACC={free:{c:"#16a34a",l:"Free Access",bc:"ap-free",bi:"✅"},tourist:{c:"#1d4ed8",l:"Tourist (ticket)",bc:"ap-tourist",bi:"🎫"},permit:{c:"#d97706",l:"Permit Required",bc:"ap-permit",bi:"📋"},closed:{c:"#dc2626",l:"Closed / Dangerous",bc:"ap-closed",bi:"⛔"}};
+const ACCD={free:"No ticket or booking required.",tourist:"Ticket at entrance or online. Guided visits.",permit:"Permit or advance booking required.",closed:"No public access. Do not attempt entry."};
 const MONTHS=["J","F","M","A","M","J","J","A","S","O","N","D"];
 
-const map=L.map('map',{zoomControl:true}).setView([39.4,-0.55],9);
-const tiles_topo=L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{attribution:'© OpenTopoMap, © OpenStreetMap',maxZoom:17});
-const tiles_sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'© Esri, Maxar',maxZoom:19});
-const tiles_osm=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19});
-tiles_topo.addTo(map);
-L.control.layers({"🗺️ Topographic":tiles_topo,"🛰️ Satellite":tiles_sat,"🏙️ Streets":tiles_osm},{},{position:'topright'}).addTo(map);
-L.control.scale({imperial:false,metric:true,position:'bottomleft'}).addTo(map);
+// ── MAP INIT ──
+const map=L.map('map',{zoomControl:true,attributionControl:false}).setView([39.4,-0.55],9);
+L.control.attribution({position:'bottomright',prefix:''}).addTo(map);
+const tTopo=L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{attribution:'© OpenTopoMap',maxZoom:17});
+const tSat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'© Esri',maxZoom:19});
+const tOSM=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19});
+tTopo.addTo(map);
+L.control.layers({"🗺️ Topo":tTopo,"🛰️ Satellite":tSat,"🏙️ Streets":tOSM},{},{position:'topright'}).addTo(map);
 
+// ── CUSTOM MULTI-SCALE BAR ──
+const MultiScale=L.Control.extend({
+  options:{position:'bottomleft'},
+  onAdd:function(m){
+    const div=L.DomUtil.create('div','mscale');
+    this._map=m;this._div=div;
+    m.on('zoomend moveend',()=>this._update());
+    this._update();
+    return div;
+  },
+  _update:function(){
+    const m=this._map;const c=m.getCenter();
+    const p1=m.latLngToContainerPoint(c);
+    const p2=m.latLngToContainerPoint([c.lat,c.lng+0.01]);
+    const pxPer100m=Math.abs(p2.x-p1.x)*1000/(0.01*111320*Math.cos(c.lat*Math.PI/180));
+    const segs=[{km:1,alt:false},{km:2,alt:true},{km:5,alt:false},{km:10,alt:true},{km:20,alt:false}];
+    let html='<div class="mscale-row">';
+    segs.forEach(s=>{
+      const px=Math.round(pxPer100m*s.km*10);
+      if(px>8&&px<200)html+=`<div class="mscale-bar${s.alt?' alt':''}" style="width:${px}px;min-width:${px}px"></div>`;
+    });
+    html+='</div><div class="mscale-labels">';
+    let lastPx=0;
+    segs.forEach(s=>{
+      const px=Math.round(pxPer100m*s.km*10);
+      if(px>8&&px<200){html+=`<span class="mscale-lbl" style="width:${px}px">${s.km}km</span>`;lastPx+=px;}
+    });
+    html+='</div>';
+    this._div.innerHTML=html;
+  }
+});
+new MultiScale().addTo(map);
+
+// ── MARKER SYMBOLS ──
+function makeIcon(cave,selected){
+  const col=ACC[cave.access].c;
+  const sel=selected;
+  const size=sel?16:10;
+  const sw=sel?3:2;
+  let svg='';
+  if(cave.kind==='mine'){
+    const s2=size*0.7;
+    svg=`<polygon points="${size/2},${(size-s2)/2} ${size-(size-s2)/2},${size/2} ${size/2},${size-(size-s2)/2} ${(size-s2)/2},${size/2}" fill="${col}" stroke="white" stroke-width="${sw}" opacity="0.95"/>`;
+  } else if(cave.kind==='arch'){
+    svg=`<polygon points="${size/2},1 ${size-1},${size-1} 1,${size-1}" fill="${col}" stroke="white" stroke-width="${sw}" opacity="0.95"/>`;
+  } else {
+    svg=`<circle cx="${size/2}" cy="${size/2}" r="${size/2-sw/2}" fill="${col}" stroke="white" stroke-width="${sw}" opacity="0.95"/>`;
+    if(sel) svg+=`<circle cx="${size/2}" cy="${size/2}" r="${size/2+3}" fill="none" stroke="${col}" stroke-width="2.5" class="sel-ring" opacity="0.7"/>`;
+  }
+  const total=sel?size+10:size+4;
+  return L.divIcon({
+    html:`<svg width="${total}" height="${total}" viewBox="0 0 ${total} ${total}"><g transform="translate(${(total-size)/2},${(total-size)/2})">${svg}</g></svg>`,
+    iconSize:[total,total],iconAnchor:[total/2,total/2],className:''
+  });
+}
+
+// ── DRAW ENTRANCES ──
+const entranceLines={};
+const entranceMarkers={};
+function drawEntrances(cave,show){
+  if(entranceLines[cave.id]){map.removeLayer(entranceLines[cave.id]);delete entranceLines[cave.id];}
+  if(entranceMarkers[cave.id]){entranceMarkers[cave.id].forEach(m=>map.removeLayer(m));delete entranceMarkers[cave.id];}
+  if(!show||!cave.entrances||cave.entrances.length<2)return;
+  const pts=cave.entrances.map(e=>[e.lat,e.lng]);
+  entranceLines[cave.id]=L.polyline(pts,{color:ACC[cave.access].c,weight:2,dashArray:'5,5',opacity:.7}).addTo(map);
+  entranceMarkers[cave.id]=cave.entrances.map((e,i)=>{
+    if(i===0)return null;
+    return L.circleMarker([e.lat,e.lng],{radius:5,fillColor:ACC[cave.access].c,color:'white',weight:1.5,fillOpacity:.8})
+      .bindTooltip(`<b>${cave.name}</b><br><small>${e.name}</small>`,{sticky:true}).addTo(map);
+  }).filter(Boolean);
+}
+
+// ── BUILD MARKERS ──
+const mkrs={};
+CAVES.forEach(c=>{
+  const m=L.marker([c.lat,c.lng],{icon:makeIcon(c,false),zIndexOffset:0});
+  m.bindTooltip(`<div style="font-family:'DM Mono',monospace;font-size:10px"><b>${c.name}</b><br><span style="color:#a39c96">${c.town} · ${c.km}km</span><br><span style="color:${ACC[c.access].c}">${ACC[c.access].l}</span>${c.kind==='mine'?'<br><span style="color:#fbbf24">⚠ Abandoned mine</span>':''}</div>`,{sticky:true});
+  m.on('click',()=>showDetail(c.id));
+  m.addTo(map);
+  mkrs[c.id]=m;
+});
+
+// GVA WFS layer
 fetch("https://terramapas.icv.gva.es/spa_icv_eepp_cuevas?service=WFS&version=2.0.0&request=GetFeature&outputFormat=application/json&srsname=EPSG:4326")
   .then(r=>r.json()).then(data=>{
     if(!data.features)return;
     L.geoJSON(data.features,{
-      pointToLayer:(f,ll)=>L.circleMarker(ll,{radius:4,fillColor:"#7c3aed",color:"#fff",weight:1,opacity:.7,fillOpacity:.4}),
+      pointToLayer:(f,ll)=>L.circleMarker(ll,{radius:3,fillColor:"#7c3aed",color:"#fff",weight:1,opacity:.6,fillOpacity:.3}),
       onEachFeature:(f,layer)=>{
-        const n=f.properties.nombre||f.properties.NOMBRE||f.properties.name||"Cueva GVA";
+        const n=f.properties.nombre||f.properties.NOMBRE||f.properties.name||"GVA cueva";
         layer.bindPopup(`<b>${n}</b><br><small style="color:#a39c96">GVA official catalogue</small>`);
       }
     }).addTo(map);
   }).catch(()=>{});
 
-const cluster=L.markerClusterGroup({maxClusterRadius:35,iconCreateFunction:c=>L.divIcon({html:`<div style="background:#1c1917;border:2px solid #d97706;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-family:DM Mono,monospace;font-size:11px;color:#fbbf24;font-weight:700">${c.getChildCount()}</div>`,iconSize:[28,28],iconAnchor:[14,14]})});
-const markers={};
-caves.forEach(c=>{
-  const col=ACCESS[c.access].color;
-  const marker=L.circleMarker([c.lat,c.lng],{radius:10,fillColor:col,color:"#fff",weight:2,opacity:1,fillOpacity:.9});
-  marker.bindTooltip(`<div style="font-family:DM Mono,monospace;font-size:11px"><b style="font-size:12px">${c.name}</b><br><span style="color:#a39c96">${c.town} · ${c.km}km</span><br><span style="color:${col}">${ACCESS[c.access].label}</span></div>`,{sticky:true});
-  marker.on('click',()=>showDetail(c.id));
-  cluster.addLayer(marker);
-  markers[c.id]=marker;
-});
-map.addLayer(cluster);
-
-let activeFilter='all',selectedId=null;
-
-function filterList(){
-  const q=document.getElementById('search').value.toLowerCase();
+// ── FILTERS ──
+let curAcc='all',curKind='all',selId=null;
+function setAcc(v){
+  if(curAcc===v){curAcc='all';v='all';}else curAcc=v;
+  ['all','free','tourist','permit','closed'].forEach(x=>document.getElementById('fa-'+x).classList.toggle('active',v===x||x==='all'&&v==='all'));
+  document.getElementById('fa-all').classList.toggle('active',v==='all');
+  ['free','tourist','permit','closed'].forEach(x=>document.getElementById('fa-'+x).classList.toggle('active',curAcc===x));
+  filterAll();
+}
+function setKind(v){
+  if(curKind===v){curKind='all';}else curKind=v;
+  ['cave','mine','arch'].forEach(x=>document.getElementById('fk-'+x).classList.toggle('active',curKind===x));
+  filterAll();
+}
+function filterAll(){
+  const q=document.getElementById('fsearch').value.toLowerCase();
   let n=0;
-  document.querySelectorAll('.cave-item').forEach(el=>{
-    const id=parseInt(el.dataset.id);
-    const c=caves.find(x=>x.id===id);
-    const mf=activeFilter==='all'||c.access===activeFilter;
-    const ms=!q||c.name.toLowerCase().includes(q)||c.town.toLowerCase().includes(q)||c.type.toLowerCase().includes(q);
-    el.style.display=mf&&ms?'':'none';
-    if(mf&&ms)n++;
+  CAVES.forEach(c=>{
+    const mA=curAcc==='all'||c.access===curAcc;
+    const mK=curKind==='all'||c.kind===curKind;
+    const mQ=!q||c.name.toLowerCase().includes(q)||c.town.toLowerCase().includes(q)||c.type.toLowerCase().includes(q);
+    const show=mA&&mK&&mQ;
+    // map marker visibility
+    if(mkrs[c.id]){
+      if(show)mkrs[c.id].addTo(map);
+      else map.removeLayer(mkrs[c.id]);
+    }
+    // list item visibility
+    const li=document.getElementById('li-'+c.id);
+    if(li)li.style.display=show?'':'none';
+    if(show)n++;
   });
-  document.getElementById('count').textContent=n+' shown';
+  document.getElementById('fcount').textContent=n+' shown';
 }
-function setFilter(f){
-  activeFilter=f;
-  ['all','free','tourist','permit','closed'].forEach(x=>document.getElementById('f-'+x).classList.toggle('active',f===x));
-  filterList();
-}
+function filterList(){filterAll();}
+
+// ── BUILD LIST ──
 function buildList(){
-  const el=document.getElementById('panel-list');
+  const el=document.getElementById('plist');
   el.innerHTML='';
-  const sorted=[...caves].sort((a,b)=>a.km-b.km);
+  const sorted=[...CAVES].sort((a,b)=>a.km-b.km);
   sorted.forEach(c=>{
     const div=document.createElement('div');
-    div.className='cave-item';div.dataset.id=c.id;
-    const acc=ACCESS[c.access];
-    div.innerHTML=`<div class="cave-dot" style="background:${acc.color}"></div><div class="cave-info"><div class="cave-name">${c.name}</div><div class="cave-sub">${c.town} · <span class="cave-km">~${c.km}km</span> · ${c.type}</div></div><div class="acc-pill ${acc.badgeClass}">${acc.label}</div>`;
+    div.className='ci';div.id='li-'+c.id;
+    const ac=ACC[c.access];
+    const kindSvg=c.kind==='mine'?`<svg width="12" height="12"><polygon points="6,0 12,6 6,12 0,6" fill="${ac.c}" stroke="white" stroke-width="1"/></svg>`:c.kind==='arch'?`<svg width="12" height="12"><polygon points="6,1 11,11 1,11" fill="${ac.c}" stroke="white" stroke-width="1"/></svg>`:`<svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="${ac.c}" stroke="white" stroke-width="1.5"/></svg>`;
+    div.innerHTML=`<div class="ci-sym">${kindSvg}</div><div class="ci-info"><div class="ci-name">${c.name}</div><div class="ci-sub">${c.town} · <span class="ckm">~${c.km}km</span> · ${c.type||c.kind}</div></div><div class="apill ${ac.bc}">${ac.l}</div>`;
     div.onclick=()=>showDetail(c.id);
     el.appendChild(div);
   });
-  filterList();
+  filterAll();
 }
-function seasonCell(code,month){
-  const cls=code===1?'month-good':code===2?'month-ok':'month-bad';
-  return`<div class="month-cell ${cls}">${month}</div>`;
+
+// ── SCORE BAR ──
+function scoreBar(val,max,color){
+  const pct=Math.round(val/max*100);
+  return`<div style="height:4px;background:var(--b1);border-radius:2px;margin-top:4px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${color};border-radius:2px;transition:width .4s"></div></div>`;
 }
-function communityHtml(community){
-  if(!community||community.length===0)return'';
-  const notes=community.map(n=>`
-    <div class="community-note">
-      <div class="community-note-text">${n.text}</div>
-      <div class="community-meta">
-        <span class="source-tag ${n.srcClass}">${n.source}</span>
-        <span class="reliability">${n.reliability}</span>
-      </div>
-    </div>`).join('');
-  return`<div class="community-box"><div class="section-title">💬 Community Reports & Real Visitor Notes</div>${notes}</div>`;
-}
+function epicLabel(n){return n>=9?'World-class':n>=7?'Epic':n>=5?'Notable':n>=3?'Moderate':'Basic'}
+function dangerLabel(n){return n>=9?'LETHAL':n>=7?'Very high':n>=5?'Significant':n>=3?'Moderate':'Safe'}
+function wetLabel(n){return n===5?'Fully aquatic':n===4?'Mostly water':n===3?'Wet sections':n===2?'Slightly damp':'Dry'}
+function sizeLabel(n){return n>=9?'Enormous':n>=7?'Very large':n>=5?'Large':n>=3?'Medium':'Small'}
+
+// ── SHOW DETAIL ──
+let activeTabId=null;
 function showDetail(id){
-  selectedId=id;
-  const c=caves.find(x=>x.id===id);
-  const acc=ACCESS[c.access];
-  document.querySelectorAll('.cave-item').forEach(el=>el.classList.toggle('selected',parseInt(el.dataset.id)===id));
-  map.flyTo([c.lat,c.lng],13,{duration:1.3});
-  const photoHtml=c.photo?`<img class="detail-photo" src="${c.photo}" alt="${c.name}" onerror="this.style.display='none'">`:`<div class="detail-photo-placeholder">${c.access==='closed'?'⛔':c.access==='permit'?'📋':c.access==='tourist'?'🎫':'🟢'}</div>`;
-  const riskHtml=c.risks.length?`<div class="risk-box"><div class="section-title">⚠️ Risks & Dangers</div><ul class="req-list">${c.risks.map(r=>`<li>${r}</li>`).join('')}</ul></div>`:'';
-  const permitHtml=c.permit_info?`<div class="permit-box"><div class="section-title">📋 How to Get Access / Permit</div><p>${c.permit_info}</p></div>`:'';
-  const hoursHtml=c.hours?`<div class="section"><div class="section-title">🕐 Hours & Dates</div><p>${c.hours}</p></div>`:'';
+  selId=id;
+  const c=CAVES.find(x=>x.id===id);
+  // update marker icons
+  CAVES.forEach(x=>{if(mkrs[x.id])mkrs[x.id].setIcon(makeIcon(x,x.id===id));});
+  // draw entrance lines
+  CAVES.forEach(x=>{if(x.id!==id)drawEntrances(x,false);});
+  drawEntrances(c,true);
+  // highlight list item
+  document.querySelectorAll('.ci').forEach(el=>el.classList.toggle('sel',el.id==='li-'+id));
+  // fly map
+  if(mkrs[id]&&map.hasLayer(mkrs[id]))map.flyTo([c.lat,c.lng],13,{duration:1.2});
+  
+  const ac=ACC[c.access];
+  const photo=c.photo?`<img class="dphoto" src="${c.photo}" alt="${c.name}" onerror="this.style.display='none'">`:
+    `<div class="dphoto-ph">${c.kind==='mine'?'⛏️':c.kind==='arch'?'🏛️':c.access==='closed'?'⛔':'🪨'}</div>`;
+
+  // operators
+  const opHtml=c.operators&&c.operators.length?`
+    <div class="opbox">
+      <div class="sh">🧗 Guided Activities & Operators</div>
+      ${c.operators.map(o=>`<div class="op">
+        <div class="op-name">${o.name}</div>
+        <div class="op-acts">Activities: ${o.acts.join(' · ')}</div>
+        <div class="op-price">Price: ${o.price}</div>
+        <a class="op-link" href="${o.url.startsWith('http')?o.url:'https://'+o.url}" target="_blank">→ ${o.url.replace('https://','').replace('http://','').split('/')[0]}</a>
+      </div>`).join('')}
+    </div>`:'';
+
+  // air quality
+  const airHtml=c.air&&c.air.notes?`
+    <div class="airbox">
+      <div class="sh">💨 Air Quality & Atmosphere</div>
+      <div class="air-item">${c.air.notes}</div>
+    </div>`:'';
+
+  // community
+  const commHtml=c.community&&c.community.length?`
+    <div class="cbox">
+      <div class="sh">💬 Community Reports & Real Notes</div>
+      ${c.community.map(n=>`<div class="cnote">
+        <div class="cntxt">${n.t}</div>
+        <div class="cmeta"><span class="stag ${n.sc}">${n.src}</span><span class="crel">${n.rel}</span></div>
+      </div>`).join('')}
+    </div>`:'';
+
+  // risks
+  const riskHtml=c.risks&&c.risks.length?`
+    <div class="rbox">
+      <div class="sh">⚠️ Risks & Dangers</div>
+      <ul class="rlist">${c.risks.map(r=>`<li>${r}</li>`).join('')}</ul>
+    </div>`:'';
+
+  // permit
+  const permitHtml=c.permit_info?`
+    <div class="pbox">
+      <div class="sh">📋 How to Get Access / Permit</div>
+      <p>${c.permit_info}</p>
+    </div>`:'';
+
+  // season
+  const seasonHtml=`
+    <div class="sec">
+      <div class="sh">🗓️ Best Season</div>
+      <div class="srow2">${c.season.map((s,i)=>`<div class="mc ${s===1?'mg':s===2?'mo':'mb'}">${MONTHS[i]}</div>`).join('')}</div>
+      <div style="display:flex;gap:10px;margin-top:4px;font-size:8px;color:var(--t4)">
+        <span style="color:#4ade80">■ Good</span><span style="color:#fcd34d">■ Caution</span><span style="color:#f87171">■ Avoid</span>
+      </div>
+    </div>`;
+
+  // videos
+  const vidHtml=c.videos&&c.videos.length?`
+    <div class="vbox">
+      <div class="sh">🎬 Videos</div>
+      ${c.videos.map(v=>`<a class="vlink" href="${v.url}" target="_blank">▶ ${v.title}</a>`).join('')}
+    </div>`:'';
+
   const mapsUrl=`https://www.google.com/maps/dir/?api=1&origin=Valencia,Spain&destination=${c.lat},${c.lng}&travelmode=driving`;
-  const det=document.getElementById('panel-detail');
-  const lst=document.getElementById('panel-list');
-  det.classList.add('active');lst.style.display='none';
+  const multiEnt=c.entrances&&c.entrances.length>1?`<div style="font-size:9px;color:var(--al);margin-bottom:8px;background:var(--s2);padding:4px 8px;border-radius:4px;border:1px solid var(--b2)">↕ ${c.entrances.length} entrances shown on map</div>`:'';
+
+  const det=document.getElementById('pdetail');
+  const lst=document.getElementById('plist');
+  det.classList.add('on');lst.style.display='none';
+  activeTabId='overview';
+
   det.innerHTML=`
-    ${photoHtml}
-    <div class="detail-body">
-      <button class="back-btn" onclick="closeDetail()">← Back to list</button>
-      <div class="detail-type">${c.type}</div>
-      <div class="detail-name">${c.name}</div>
-      <div class="detail-location">${c.town} · ${c.province} · <span class="detail-km">~${c.km} km from Valencia</span></div>
-      <div class="detail-highlight">${c.highlight}</div>
-      <div class="access-bar ${c.access}">
-        <div class="access-bar-icon">${acc.barIcon}</div>
-        <div class="access-bar-text">
-          <div class="access-bar-label">${acc.label}</div>
-          <div class="access-bar-desc">${ACCESS_DESC[c.access]}</div>
+    ${photo}
+    <div class="dbody">
+      <button class="backbtn" onclick="closeDetail()">← Back to list</button>
+      <div class="dkind">${c.type||c.kind} · ${c.kind.toUpperCase()}</div>
+      <div class="dname">${c.name}</div>
+      <div class="dloc">${c.town} · ${c.prov} · <span class="dkm">~${c.km}km from Valencia</span></div>
+      <div class="dhigh">${c.highlight}</div>
+      ${multiEnt}
+      <div class="abar ${c.access}">
+        <div style="font-size:16px">${ac.bi}</div>
+        <div><div class="abar-lbl">${ac.l}</div><div class="abar-sub">${ACCD[c.access]}</div></div>
+      </div>
+      <div class="srow">
+        <div class="scell"><div class="slabel">Epic</div><div class="sval s-epic">${c.epic}/10</div>${scoreBar(c.epic,10,'#fbbf24')}<div style="font-size:8px;color:var(--t4);margin-top:3px">${epicLabel(c.epic)}</div></div>
+        <div class="scell"><div class="slabel">Danger</div><div class="sval s-danger">${c.danger}/10</div>${scoreBar(c.danger,10,'#f87171')}<div style="font-size:8px;color:var(--t4);margin-top:3px">${dangerLabel(c.danger)}</div></div>
+        <div class="scell"><div class="slabel">Size</div><div class="sval s-size">${c.size}/10</div>${scoreBar(c.size,10,'#67e8f9')}<div style="font-size:8px;color:var(--t4);margin-top:3px">${sizeLabel(c.size)}</div></div>
+        <div class="scell"><div class="slabel">Wet</div><div class="sval s-wet">${c.wet}/5</div>${scoreBar(c.wet,5,'#60a5fa')}<div style="font-size:8px;color:var(--t4);margin-top:3px">${wetLabel(c.wet)}</div></div>
+      </div>
+      <div class="sgrid">
+        <div class="sc"><div class="sl">Duration</div><div class="sv">${c.duration}</div></div>
+        <div class="sc"><div class="sl">Temperature</div><div class="sv">${c.temp}</div></div>
+        <div class="sc"><div class="sl">Price</div><div class="sv">${c.price}</div></div>
+        <div class="sc"><div class="sl">Depth</div><div class="sv">${c.depth}</div></div>
+        <div class="sc"><div class="sl">Length</div><div class="sv">${c.length}</div></div>
+        <div class="sc"><div class="sl">Distance</div><div class="sv">~${c.km}km</div></div>
+      </div>
+      <div class="tabs">
+        <div class="tab on" onclick="switchTab('overview',this)">Overview</div>
+        <div class="tab" onclick="switchTab('access',this)">Access</div>
+        ${opHtml?'<div class="tab" onclick="switchTab(\'activities\',this)">Activities</div>':''}
+        ${commHtml?'<div class="tab" onclick="switchTab(\'community\',this)">Reports</div>':''}
+      </div>
+      <div id="tp-overview" class="tabp on">
+        <div style="padding-top:10px">
+          <div class="sec"><div class="sh">📖 About</div><p>${c.desc}</p></div>
+          ${c.hours?`<div class="sec"><div class="sh">🕐 Opening Hours & Dates</div><p>${c.hours}</p></div>`:''}
+          ${seasonHtml}
+          ${airHtml}
+          ${vidHtml}
         </div>
       </div>
-      <div class="stats-grid">
-        <div class="stat-cell"><div class="stat-label">Duration</div><div class="stat-value">${c.duration}</div></div>
-        <div class="stat-cell"><div class="stat-label">Temperature</div><div class="stat-value">${c.temp}</div></div>
-        <div class="stat-cell"><div class="stat-label">Price</div><div class="stat-value">${c.price}</div></div>
-        <div class="stat-cell"><div class="stat-label">Depth</div><div class="stat-value">${c.depth}</div></div>
-        <div class="stat-cell"><div class="stat-label">Length</div><div class="stat-value">${c.length}</div></div>
-        <div class="stat-cell"><div class="stat-label">Distance</div><div class="stat-value">~${c.km} km</div></div>
-      </div>
-      <div class="section"><div class="section-title">📖 About</div><p>${c.desc}</p></div>
-      ${hoursHtml}
-      ${riskHtml}
-      ${communityHtml(c.community)}
-      ${permitHtml}
-      <div class="section"><div class="section-title">✅ Requirements & Access</div><ul class="req-list">${c.requirements.map(r=>`<li>${r}</li>`).join('')}</ul></div>
-      <div class="section"><div class="section-title">🗓️ Best Season</div>
-        <div class="season-row">${c.season.map((s,i)=>seasonCell(s,MONTHS[i])).join('')}</div>
-        <div style="display:flex;gap:12px;margin-top:5px;font-size:9px;color:var(--text3)">
-          <span style="color:#4ade80">■ Good</span><span style="color:#fcd34d">■ Caution</span><span style="color:#f87171">■ Avoid/Closed</span>
+      <div id="tp-access" class="tabp">
+        <div style="padding-top:10px">
+          ${riskHtml}
+          ${permitHtml}
+          <div class="sec"><div class="sh">✅ Requirements</div><ul class="rlist">${(c.requirements||['No special requirements listed']).map(r=>`<li>${r}</li>`).join('')}</ul></div>
+          <a class="dirbtn" href="${mapsUrl}" target="_blank"><span>🗺️</span><span>Directions from Valencia</span><span style="margin-left:auto;opacity:.5">→</span></a>
+          <div class="sec"><div class="sh">📍 Nearby</div><p>${c.nearby}</p></div>
+          <div class="sec"><div class="sh">🔗 Official Info</div><a class="slink" href="${c.url}" target="_blank">Visit source →</a></div>
+          <div class="embox">🚨 <strong>Emergency: 112</strong> · Speleology rescue: specify "rescate espeleológico"<br>🏛️ FECV: <strong>espeleocv.org.es</strong></div>
         </div>
       </div>
-      <a class="directions-btn" href="${mapsUrl}" target="_blank">
-        <span>🗺️</span><span>Directions from Valencia (Google Maps)</span><span style="margin-left:auto;opacity:.5">→</span>
-      </a>
-      <div class="section"><div class="section-title">📍 Nearby</div><p>${c.nearby}</p></div>
-      <div class="section"><div class="section-title">🔗 Official Info</div><a class="site-link" href="${c.url}" target="_blank">Visit official source →</a></div>
-      <div class="emergency-box">🚨 <strong>Emergency Spain: 112</strong> · Speleology rescue: call 112, specify "rescate espeleológico"<br>🏛️ FECV: <strong>espeleocv.org.es</strong> · Cova Tallada permits: <strong>covatallada.org/reservas</strong></div>
+      ${opHtml?`<div id="tp-activities" class="tabp"><div style="padding-top:10px">${opHtml}</div></div>`:''}
+      ${commHtml?`<div id="tp-community" class="tabp"><div style="padding-top:10px">${commHtml}</div></div>`:''}
     </div>`;
 }
+
+function switchTab(name,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.tabp').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  const tp=document.getElementById('tp-'+name);
+  if(tp)tp.classList.add('on');
+}
+
 function closeDetail(){
-  document.getElementById('panel-detail').classList.remove('active');
-  document.getElementById('panel-list').style.display='';
-  selectedId=null;
-  document.querySelectorAll('.cave-item').forEach(el=>el.classList.remove('selected'));
+  selId=null;
+  CAVES.forEach(x=>{if(mkrs[x.id])mkrs[x.id].setIcon(makeIcon(x,false));});
+  CAVES.forEach(x=>drawEntrances(x,false));
+  document.getElementById('pdetail').classList.remove('on');
+  document.getElementById('plist').style.display='';
+  document.querySelectorAll('.ci').forEach(el=>el.classList.remove('sel'));
   map.flyTo([39.4,-0.55],9,{duration:1});
 }
+
+// ── SIZE RANKING ──
+// Show size ranking on hover in list: sorted by size_score descending, display rank in list
+function addRankBadges(){
+  const sorted=[...CAVES].sort((a,b)=>b.size-a.size);
+  sorted.forEach((c,i)=>{
+    const el=document.getElementById('li-'+c.id);
+    if(el&&i<10){
+      const badge=document.createElement('div');
+      badge.style.cssText='font-size:8px;color:var(--t4);flex-shrink:0;margin-top:3px';
+      badge.title='Size rank #'+(i+1);
+      if(i===0)badge.textContent='#1 🏆';
+      el.appendChild(badge);
+    }
+  });
+}
+
 buildList();
+setTimeout(addRankBadges,50);
 </script>
 </body>
 </html>
