@@ -1437,16 +1437,13 @@ function showDetail(id){
       ${opHtml?`<div id="tp-activities" class="tabp"><div style="padding-top:10px">${opHtml}</div></div>`:''}
       ${commHtml?`<div id="tp-community" class="tabp"><div style="padding-top:10px">${commHtml}</div></div>`:''}
     </div>`;
-}
-
-// trigger async photo fetch after render
+  // trigger async photo fetch after render
   const gid = 'gallery-'+id;
   const fallback = c.photo || null;
   const cached = photoCache[id];
   if (cached && cached.length) {
     renderGallery(gid, cached, fallback);
   } else if (cached === null) {
-    // already fetching, wait
     const poll = setInterval(()=>{ if(photoCache[id]!==null){clearInterval(poll);renderGallery(gid,photoCache[id],fallback);}},300);
   } else {
     fetchCavePhotos(c).then(photos => renderGallery(gid, photos, fallback));
